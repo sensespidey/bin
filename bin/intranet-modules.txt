@@ -28,3 +28,5 @@ subscriptions
 NDRUPAL-6--1-0-BETA5
 weight
 NDRUPAL-6--1-0-BETA3
+conference
+NDRUPAL-6--1-2-BETA2
