@@ -1,0 +1,17 @@
+K 25
+svn:wc:ra_dav:version-url
+V 72
+/!svn/ver/488/sandboxes/dlaventure/bin/drush/commands/pm/package_handler
+END
+cvs.inc
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/!svn/ver/488/sandboxes/dlaventure/bin/drush/commands/pm/package_handler/cvs.inc
+END
+wget.inc
+K 25
+svn:wc:ra_dav:version-url
+V 81
+/!svn/ver/488/sandboxes/dlaventure/bin/drush/commands/pm/package_handler/wget.inc
+END
