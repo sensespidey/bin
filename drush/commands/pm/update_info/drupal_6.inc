@@ -1,28 +1,28 @@
 <?php
-// $Id: drupal_6.inc,v 1.5 2009/04/18 01:29:32 grugnog Exp $
+// $Id: drupal_6.inc,v 1.7 2010/01/27 16:29:19 weitzman Exp $
 
-function pm_update_filter(&$release) {
+function pm_update_filter(&$project) {
   $update = FALSE;
-  switch($release['status']) {
+  switch($project['status']) {
     case UPDATE_CURRENT:
       $status = dt('Up to date');
-      $release['candidate_version'] = $release['recommended'];
+      $project['candidate_version'] = $project['recommended'];
       break;
     case UPDATE_NOT_CURRENT:
       $status = dt('Update available');
-      pm_release_recommended($release);
+      pm_release_recommended($project);
       break;
     case UPDATE_NOT_SECURE:
       $status = dt('SECURITY UPDATE available');
-      pm_release_recommended($release);
+      pm_release_recommended($project);
       break;
     case UPDATE_REVOKED:
       $status = dt('Installed version REVOKED');
-      pm_release_recommended($release);
+      pm_release_recommended($project);
       break;
     case UPDATE_NOT_SUPPORTED:
       $status = dt('Installed version not supported');
-      pm_release_recommended($release);
+      pm_release_recommended($project);
       break;
     case UPDATE_NOT_CHECKED:
       $status = dt('Unable to check status');

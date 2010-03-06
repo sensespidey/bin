@@ -1,5 +1,5 @@
 <?php
-// $Id: backend.inc,v 1.15 2009/05/20 21:26:55 adrian Exp $
+// $Id: backend.inc,v 1.27 2010/01/29 06:14:26 greg1anderson Exp $
 
 /**
  * @file Drush backend API
@@ -13,13 +13,13 @@
  * invoke each other.
  *
  * There are many cases where a command might wish to call another
- * command in it's own process, to allow the calling command to
+ * command in its own process, to allow the calling command to
  * intercept and act on any errors that may occur in the script that
  * was called.
  *
  * A simple example is if there exists an 'update' command for running
  * update.php on a specific site. The original command might download
- * a newer version of a module for installation on a site, and then 
+ * a newer version of a module for installation on a site, and then
  * run the update script in a separate process, so that in the case
  * of an error running a hook_update_n function, the module can revert
  * to a previously made database backup, and the previously installed code.
@@ -49,18 +49,33 @@
  *
  * If the key-based ssh authentication has been set up between the servers, this will just
  * work, otherwise the user will be asked to enter a password.
- */ 
+ */
 
 /**
  * Identify the JSON encoded output from a command.
  */
 define('DRUSH_BACKEND_OUTPUT_DELIMITER', 'DRUSH_BACKEND_OUTPUT_START>>>%s<<<DRUSH_BACKEND_OUTPUT_END');
 
+function drush_backend_set_result($value) {
+  if (drush_get_context('DRUSH_BACKEND')) {
+    drush_set_context('BACKEND_RESULT', $value);
+  }
+}
+
+function drush_backend_get_result() {
+  return drush_get_context('BACKEND_RESULT');
+}
+
 function drush_backend_output() {
   $data = array();
 
   $data['output'] = ob_get_contents();
   ob_end_clean();
+
+  $result_object = drush_backend_get_result();
+  if (isset($result_object)) {
+    $data['object'] = $result_object;
+  }
 
   $error = drush_get_error();
   $data['error_status'] = ($error) ? $error : DRUSH_SUCCESS;
@@ -87,7 +102,7 @@ function drush_backend_output() {
  *
  * @return
  *   An associative array containing the data from the external command, or the string parameter if it
- *   could not be parsed succesfully.
+ *   could not be parsed successfully.
  */
 function drush_backend_parse_output($string, $integrate = TRUE) {
   $regex = sprintf(DRUSH_BACKEND_OUTPUT_DELIMITER, '(.*)');
@@ -154,10 +169,10 @@ function _drush_backend_integrate($data) {
  *
  * @return
  *   False if the command could not be executed, or did not return any output.
- *   If it executed succesfully, it returns an associative array containing the command
+ *   If it executed successfully, it returns an associative array containing the command
  *   called, the output of the command, and the error code of the command.
  */
-function _drush_proc_open($cmd, $data = NULL) {
+function _drush_proc_open($cmd, $data = NULL, $context = NULL) {
   $descriptorspec = array(
      0 => array("pipe", "r"),  // stdin is a pipe that the child will read from
      1 => array("pipe", "w"),  // stdout is a pipe that the child will write to
@@ -173,25 +188,21 @@ function _drush_proc_open($cmd, $data = NULL) {
     $info = stream_get_meta_data($pipes[1]);
     stream_set_blocking($pipes[1], TRUE);
     stream_set_timeout($pipes[1], 1);
-    $stream = '';
-    while (!feof($pipes[1]) && !$info['timed_out']) { 
+    $string = '';
+    while (!feof($pipes[1]) && !$info['timed_out']) {
       $string .= fgets($pipes[1], 4096);
       $info = stream_get_meta_data($pipes[1]);
-      ob_flush();
       flush();
     };
 
     $info = stream_get_meta_data($pipes[2]);
     stream_set_blocking($pipes[2], TRUE);
     stream_set_timeout($pipes[2], 1);
-    $stream = '';
-    while (!feof($pipes[2]) && !$info['timed_out']) { 
+    while (!feof($pipes[2]) && !$info['timed_out']) {
       $string .= fgets($pipes[2], 4096);
       $info = stream_get_meta_data($pipes[2]);
-      ob_flush();
       flush();
     };
-
 
     fclose($pipes[0]);
     fclose($pipes[1]);
@@ -221,8 +232,11 @@ function _drush_proc_open($cmd, $data = NULL) {
  *    If TRUE, any error statuses or log messages will be integrated into the current process. This might not be what you want,
  *    if you are writing a command that operates on multiple sites.
  * @param drush_path
- *    Optional. Defaults to the current drush.php file. You may also specify a different drush.php script.
- *    You will most likely need to set this when calling drush on a remote server.
+ *    Optional. Defaults to the current drush.php file on the local machine, and
+ *    to simply 'drush' (the drush script in the current PATH) on remote servers.
+ *    You may also specify a different drush.php script explicitly.  You will need
+ *    to set this when calling drush on a remote server if 'drush' is not in the
+ *    PATH on that machine.
  * @param hostname
  *    Optional. A remote host to execute the drush command on.
  * @param username
@@ -233,8 +247,16 @@ function _drush_proc_open($cmd, $data = NULL) {
  *   If the command was completed, this will return an associative array containing the data from drush_backend_output().
  */
 function drush_backend_invoke($command, $data = array(), $method = 'GET', $integrate = TRUE, $drush_path = NULL, $hostname = NULL, $username = NULL) {
-  $cmd = _drush_backend_generate_command($command, $data, $method, $drush_path, $hostname, $username);
-  drush_log(dt('Running: !cmd', array('!cmd' => $cmd)), 'command');
+  $args = explode(" ", $command);
+  $command = array_shift($args);
+  return drush_backend_invoke_args($command, $args, $data, $method, $integrate, $drush_path, $hostname, $username);
+}
+
+/*
+ * A variant of drush_backend_invoke() which specifies command and arguments separately.
+ */
+function drush_backend_invoke_args($command, $args, $data = array(), $method = 'GET', $integrate = TRUE, $drush_path = NULL, $hostname = NULL, $username = NULL) {
+  $cmd = _drush_backend_generate_command($command, $args, $data, $method, $drush_path, $hostname, $username);
   return _drush_backend_invoke($cmd, $data, $integrate);
 }
 
@@ -260,6 +282,7 @@ function drush_backend_invoke($command, $data = array(), $method = 'GET', $integ
  *   If the command was completed, this will return an associative array containing the data from drush_backend_output().
  */
 function _drush_backend_invoke($cmd, $data = null, $integrate = TRUE) {
+  drush_log(dt('Running: !cmd', array('!cmd' => $cmd)), 'command');
   $proc = _drush_proc_open($cmd, $data);
 
   if (($proc['code'] == DRUSH_APPLICATION_ERROR) && $integrate) {
@@ -272,7 +295,7 @@ function _drush_backend_invoke($cmd, $data = null, $integrate = TRUE) {
       return $values;
     }
     else {
-      return drush_set_error('DRUSH_FRAMEWORK_ERROR', dt("The command could not be executed succesfully (returned: !return, code: %code)", array("!return" => $proc['output'], "%code" =>  $proc['code'])));
+      return drush_set_error('DRUSH_FRAMEWORK_ERROR', dt("The command could not be executed successfully (returned: !return, code: %code)", array("!return" => $proc['output'], "%code" =>  $proc['code'])));
     }
   }
   return FALSE;
@@ -280,9 +303,11 @@ function _drush_backend_invoke($cmd, $data = null, $integrate = TRUE) {
 
 /**
  * Generate a command to execute.
-
+ *
  * @param command
  *    A defined drush command such as 'cron', 'status' or any of the available ones such as 'drush pm'.
+ * @param args
+ *    An array or arguments for the command.
  * @param data
  *    Optional. An array containing options to pass to the remote script.
  *    Array items with a numeric key are treated as optional arguments to the command.
@@ -298,8 +323,11 @@ function _drush_backend_invoke($cmd, $data = null, $integrate = TRUE) {
  *    If TRUE, any error statuses or log messages will be integrated into the current process. This might not be what you want,
  *    if you are writing a command that operates on multiple sites.
  * @param drush_path
- *    Optional. Defaults to the current drush.php file. You may also specify a different drush.php script.
- *    You will most likely need to set this when calling drush on a remote server.
+ *    Optional. Defaults to the current drush.php file on the local machine, and
+ *    to simply 'drush' (the drush script in the current PATH) on remote servers.
+ *    You may also specify a different drush.php script explicitly.  You will need
+ *    to set this when calling drush on a remote server if 'drush' is not in the
+ *    PATH on that machine.
  * @param hostname
  *    Optional. A remote host to execute the drush command on.
  * @param username
@@ -308,29 +336,32 @@ function _drush_backend_invoke($cmd, $data = null, $integrate = TRUE) {
  * @return
  *   A text string representing a fully escaped command.
  */
-function _drush_backend_generate_command($command, &$data, $method = 'GET', $drush_path = null, $hostname = null, $username = null) {
-  $drush_path = !is_null($drush_path) ? $drush_path : DRUSH_COMMAND; // Call own drush.php file.
-  $data['root'] = ($data['root']) ? $data['root'] : drush_get_context('DRUSH_DRUPAL_ROOT');
+function _drush_backend_generate_command($command, $args, &$data, $method = 'GET', $drush_path = null, $hostname = null, $username = null) {
+  if (drush_is_local_host($hostname)) {
+    $hostname = null;
+  }
+
+  $drush_path = !is_null($drush_path) ? $drush_path : (is_null($hostname) ? DRUSH_COMMAND : 'drush'); // Call own drush.php file on local machines, or 'drush' on remote machines.
+  $data['root'] = array_key_exists('root', $data) ? $data['root'] : drush_get_context('DRUSH_DRUPAL_ROOT');
   $data['uri'] = array_key_exists('uri', $data) ? $data['uri'] : drush_get_context('DRUSH_URI');
 
   $option_str = _drush_backend_argument_string($data, $method);
-  $args = explode(" ", $command);
   foreach ($data as $key => $arg) {
     if (is_numeric($key)) {
       $args[] = $arg;
       unset($data[$key]);
     }
   }
-  $command = '';
   foreach ($args as $arg) {
     $command .= ' ' . escapeshellarg($arg);
   }
   // @TODO: Implement proper multi platform / multi server support.
-  $cmd = sprintf(escapeshellcmd("php %s %s %s --backend"), escapeshellcmd($drush_path), $option_str, $command);
+  $cmd = sprintf(escapeshellcmd(" %s %s %s --backend"), escapeshellcmd($drush_path), $option_str, $command);
 
   if (!is_null($hostname)) {
     $username = (!is_null($username)) ? $username : get_current_user();
-    $cmd = sprintf("ssh -o PasswordAuthentication=no %s@%s %s", escapeshellarg($username), escapeshellarg($hostname), escapeshellarg($cmd));
+    $ssh_options = drush_get_option('ssh-options', "-o PasswordAuthentication=no");
+    $cmd = sprintf("ssh %s %s@%s %s", $ssh_options, escapeshellarg($username), escapeshellarg($hostname), escapeshellarg($cmd));
   }
 
   return $cmd;
@@ -342,12 +373,14 @@ function _drush_backend_generate_command($command, &$data, $method = 'GET', $dru
  * Takes the same parameters as drush_backend_invoke, but forks a new
  * process by calling the command using system() and adding a '&' at the
  * end of the command.
- * 
+ *
  * Use this if you don't care what the return value of the command may be.
  */
 function drush_backend_fork($command, $data, $drush_path = null, $hostname = null, $username = null) {
   $data['quiet'] = TRUE;
-  $cmd = "(" . _drush_backend_generate_command($command, $data, 'GET', $drush_path, $hostname, $username) . ' &) > /dev/null';
+  $args = explode(" ", $command);
+  $command = array_shift($args);
+  $cmd = "(" . _drush_backend_generate_command($command, $args, $data, 'GET', $drush_path, $hostname, $username) . ' &) > /dev/null';
   drush_log(dt("Forking : !cmd", array('!cmd' => $cmd)));
   system($cmd);
 }
@@ -406,7 +439,7 @@ function _drush_backend_argument_string(&$data, $method = 'GET') {
  *   The name of the option.
  * @param value
  *   The value of the option.
- * 
+ *
  * @return
  *   If the value is set to TRUE, this function will return " --key"
  *   In other cases it will return " --key='value'"
@@ -424,7 +457,7 @@ function _drush_escape_option($key, $value = TRUE) {
 /**
  * Read options fron STDIN during POST requests.
  *
- * This function will read any text from the STDIN pipe, 
+ * This function will read any text from the STDIN pipe,
  * and attempts to generate an associative array if valid
  * JSON was received.
  *
@@ -441,3 +474,5 @@ function _drush_backend_get_stdin() {
   }
   return FALSE;
 }
+
+

@@ -1,5 +1,5 @@
 <?php
-// $Id: simpletest.drush.inc,v 1.1 2009/04/04 02:02:40 weitzman Exp $
+// $Id: simpletest.drush.inc,v 1.6 2010/01/20 16:23:38 weitzman Exp $
 
 /**
  * @file Drush simpletest commands
@@ -10,9 +10,9 @@
  */
 function simpletest_drush_help($section) {
   switch ($section) {
-    case 'drush:test mail':
+    case 'drush:test-mail':
       return dt("Run tests and email the results. See the docs for run-tests.sh to understand --extra.");
-  case 'drush:test clean':
+  case 'drush:test-clean':
     return dt("Clean leftover tables and file directories from prior test runs.");
   }
 }
@@ -21,12 +21,11 @@ function simpletest_drush_help($section) {
  * Implementation of hook_drush_command().
  */
 function simpletest_drush_command() {
-  $items['test mail'] = array(
-    'callback' => 'drush_test_mail',
+  $items['test-mail'] = array(
     'description' => 'Run all tests and mail the results to your team.',
     'examples' => array(
-       "drush test mail me@example.com --extra=\"--class BlockTestCase\"" => "Run block tests & email to me.",
-       "drush test mail me@example.com --extra=\"--all\"" => "Run all tests & email to me.",
+       "drush test-mail me@example.com --extra=\"--class BlockTestCase\"" => "Run block tests & email to me.",
+       "drush test-mail me@example.com --extra=\"--all\"" => "Run all tests & email to me.",
     ),
     'arguments' => array(
       'recipients' => 'A comma delimited list of email addrresses.',
@@ -38,57 +37,39 @@ function simpletest_drush_command() {
     'drupal dependencies' => array('simpletest'),
     'core' => array('6','7'),
   );
-  $items['test clean'] = array(
-    'callback' => 'drush_test_clean',
+  $items['test-clean'] = array(
     'description' => 'Delete leftover tables and files from prior test runs.',
     'drupal dependencies' => array('simpletest'),
     'core' => array('6','7'),
+  );
+  $items['test-drush'] = array(
+    'description' => 'Run drush-specific tests',
+    'bootstrap' => DRUSH_BOOTSTRAP_DRUSH,
   );
   return $items;
 }
 
 // A drush command callback.
-function drush_test_clean() {
+function drush_simpletest_test_clean() {
   simpletest_clean_environment();
   drush_print("Simpletest environment successfully cleaned.");
 }
 
 
 // A Drush command callback.
-function drush_test_mail($recipients) {
+function drush_simpletest_test_mail($recipients) {
   $run_tests = './scripts/run-tests.sh';
   if (!file_exists($run_tests)) {
     return drush_set_error('DRUSH_SIMPLETEST_RUNTESTS_SH', dt('You must copy or symlink run-tests.sh into your /scripts directory beneath Drupal root.'));
   }
-  
-  $php = drush_simpletest_find_php();
+
   $extra = drush_get_option('extra');
   $url = escapeshellarg(url('', array('absolute' => TRUE)));
-  $exec = $php . " $run_tests --php '" . $php . '\' --url ' . $url . " $extra";
+  $exec = "$run_tests --php '" . DRUSH_COMMAND . '\' --url ' . $url . " $extra";
   drush_shell_exec($exec);
   $output =  implode("\n", drush_shell_exec_output());
   $subject = 'Simpletest results - ' . drush_simpletest_format_results($output);
   mail($recipients, $subject, $output);
-}
-
-// Copied from run-tests.sh
-function drush_simpletest_find_php() {
-  // Determine location of php command automatically, unless a comamnd line argument is supplied.
-  if (!$php = drush_get_option('php')) {
-    if (!empty($_ENV['_'])) {
-      // '_' is an environment variable set by the shell. It contains the command that was executed.
-      $php = $_ENV['_'];
-    }
-    elseif (!empty($_ENV['SUDO_COMMAND'])) {
-      // 'SUDO_COMMAND' is an environment variable set by the sudo program.
-      // Extract only the PHP interpreter, not the rest of the command.
-      list($php, ) = explode(' ', $_ENV['SUDO_COMMAND'], 2);
-    }
-    else {
-      drush_set_error('DRUSH_SIMPLETEST_PHP_PATH_NOT_FOUND', dt('Unable to automatically determine the path to the PHP interpreter. Please supply the --php argument.'));
-    }
-  }
-  return $php;
 }
 
 // Based on pifr_review_format_results(). Not working yet. Help wanted.
@@ -106,4 +87,18 @@ function drush_simpletest_format_results($output) {
   else {
     return dt('Unknown.');
   }
+}
+
+/**
+ * Simple drush self-test procedure
+ *
+ * This only tests self-execution for now.
+ *
+ * XXX: this needs to be adapted to a testing framework, see:
+ *
+ * http://drupal.org/node/483940
+ */
+function drush_simpletest_test_drush() {
+  drush_log(dt("Invoking %drush help in a subprocess", array('%drush' => DRUSH_COMMAND)));
+  drush_backend_invoke('help', array(), 'GET', FALSE);
 }

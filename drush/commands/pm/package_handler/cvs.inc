@@ -1,89 +1,67 @@
 <?php
-// $Id: cvs.inc,v 1.3 2009/04/19 03:56:32 weitzman Exp $
+// $Id: cvs.inc,v 1.12 2010/02/23 14:18:58 weitzman Exp $
 
 /**
  * @file Drush PM CVS extension
  */
 
 /**
- * Install a project (so far, only modules are supported).
+ * Install a project.
  *
- * @param $project The short name of the drupal.org project
- * @param $info The details (fetched from drupal.org via xml-rpc)
- * @param $path The path to install the module to.
+ * @param $project The project array with name, base and full (final) paths. 
+ * @param $release The release details array from drupal.org
  */
-function package_handler_install_project($project, $info, $path = '.') {
-  drush_op('chdir', $path);
-
-  drush_log("Downloading project $project ...");
-
-  $cvsparams = drush_get_option('cvsparams');
+function package_handler_install_project($project, $release) {
+  drush_log('Downloading project ' . $project['name'] . ' ...');
 
   // Check it out.
-  drush_pm_cvs_checkout($project, $info, $cvsparams);
+  drush_pm_cvs($project, $release);
 
-  if (is_dir($path . $project) && !drush_get_context('DRUSH_SIMULATE')) {
-    drush_log("Checking out " . $project . " was successful.");
-    return TRUE;
-  }
-  else {
-    drush_set_error('DRUSH_PM_CVS_CHECKOUT_PROBLEMS', dt("Unable to check out !filename to !path from cvs.drupal.org", array('!filename' => $filename, '!path' => $path)));
-    return FALSE;
+  if (!drush_get_context('DRUSH_SIMULATE')) {
+    if (is_dir($project['full_project_path'])) {
+      drush_log("Checking out " . $project['name'] . " was successful.");
+      return TRUE;
+    }
+    else {
+      drush_set_error('DRUSH_PM_CVS_CHECKOUT_PROBLEMS', dt("Unable to check out !project to !destination from cvs.drupal.org", array('!project' => $project['name'], '!destination' => $project['full_project_path'])));
+      return FALSE;
+    }
   }
 }
 
 /**
  * Update a project (so far, only modules are supported).
  *
- * @param $project The short name of the drupal.org project
- * @param $info The details (fetched from drupal.org via xml-rpc)
- * @param $path The path to install the module to.
+ * @param $project The project array with name, base and full (final) paths. 
+ * @param $release The release details array from drupal.org
  */
-function package_handler_update_project($project, $info, $path = '.') {
-  drush_op('chdir', $path);
+function package_handler_update_project($project, $release) {
+  drush_log('Updating project ' . $project['name'] . ' ...');
 
-  drush_log("Updating project $project ...");
 
-  $cvsmethod = drush_get_option('cvsmethod');
-  if (empty($cvsmethod) && file_exists($project. '/.svn')) {
-    // If we have .svn files the default is to update in place
-    // this will try and merge any changes, which could break things
-    // but we assume anyone using SVN is competent enough to deal with this!
-    $cvsmethod = 'update';
-  }
+  // Check out a fresh copy, or update an existing one.
+  drush_pm_cvs($project, $release);
 
-  $cvsparams = drush_get_option('cvsparams');
-
-  drush_log($cvsmethod);
-  drush_log(strpos(strtolower($cvsmethod), 'up'));
-  if (substr($cvsmethod, 0, 2) == 'up') {
-    // Update the working copy.
-    drush_op('chdir', $project);
-    if (!drush_shell_exec('cvs update -dP '. $cvsparams . ' -r '. $info['tag'])) {
-      drush_die("Unable to update $project from cvs.drupal.org.");
-    }
-    drush_op('chdir', '..');
-  }
-  else {
-    // Check it out.
-    drush_pm_cvs_checkout($project, $info, $cvsparams);
-  }
-
-  if (is_dir($path . $project) && !drush_get_context('DRUSH_SIMULATE')) {
-    drush_log("Updating out " . $project . " was successful.");
+  if (is_dir($project['full_project_path']) && !drush_get_context('DRUSH_SIMULATE')) {
+    drush_log("Updating of " . $project['name'] . " was successful.");
     return TRUE;
   }
   else {
-    return drush_set_error('DRUSH_PM_CVS_UPDATE_PROBLEMS', dt("Unable to update !project from cvs.drupal.org", array('!project' => $project)));
+    return drush_set_error('DRUSH_PM_CVS_UPDATE_PROBLEMS', dt("Unable to update !project from cvs.drupal.org", array('!project' => $project['name'])));
   }
 }
 
-function drush_pm_cvs_checkout($project, $info, $cvsparams) {
+/**
+ * General CVS helper function
+ * @param $project The project array with name, base and full (final) paths. 
+ * @param $release The release details array from drupal.org
+ */
+function drush_pm_cvs($project, $release) {
   // By default we assume a module
   $repos = 'drupal-contrib';
   $cvsdir = 'contributions/modules/';
 
-  switch ($info['type']) {
+  switch ($project['project_type']) {
     case 'theme':
       $cvsdir = 'contributions/themes/';
       break;
@@ -101,7 +79,47 @@ function drush_pm_cvs_checkout($project, $info, $cvsparams) {
       $repos = 'drupal';
   }
 
-  if (!drush_shell_exec('cvs -z6 '. $cvsparams .' -d:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/' . $repos . ' checkout -d '. $project .' -r '. $info['tag'] .' '. $cvsdir . $project)) {
-    drush_set_error('DRUSH_PM_UNABLE_CHECKOUT', "Unable to checkout $project from cvs.drupal.org.");
+  $cvsmethod = drush_get_option('cvsmethod', FALSE);
+  $cvsparams = drush_get_option('cvsparams', FALSE);
+  // Determine reasonable defaults, based on context.
+  if (empty($cvsmethod)) {
+    $cvsmethod = 'checkout';
+    // If we have an existing working copy we update.
+    if (is_dir($project['full_project_path'] . '/CVS')) {
+      $cvsmethod = 'update';
+      // By default we update overwriting changes, however if we have
+      // an existing CVS checkout that is version controlled then the
+      // default is to update in place, which will attempt to merge changes
+      // but we assume anyone using SVN is competent enough to deal with this!
+      // TODO: Make this work with BZR etc.
+      if (!file_exists($path . '/.svn') && $cvsparams === FALSE) {
+        $cvsparams = '-dPC';
+      }
+    }
+  }
+  if ($cvsparams === FALSE) {
+    $cvsparams = '-dP';
+  }
+
+  // CVS only accepts relative paths.
+  $cwd = drush_get_context('DRUSH_DRUPAL_ROOT');
+  $path = '.' . ltrim(str_replace($cwd, '', $project['full_project_path']), '.');
+
+  $cvsparts = array();
+  $cvsparts[] = '-z6';
+  $cvsparts[] = $cvsparams;
+  $cvsparts[] = '-d:pserver:' . drush_get_option('cvscredentials', 'anonymous:anonymous') . '@cvs.drupal.org:/cvs/' . $repos;
+  $cvsparts[] = $cvsmethod;
+  $cvsparts[] = '-r '. $release['tag'];
+  if ($cvsmethod == 'checkout') {
+    $cvsparts[] = '-d ' . $path;
+    $cvsparts[] = $cvsdir . $project['name'];
+  }
+  else {
+    $cvsparts[] = $path;
+  }
+
+  if (!drush_shell_exec('cvs ' . implode(' ', $cvsparts))) {
+    drush_set_error('DRUSH_PM_UNABLE_CHECKOUT', 'Unable to checkout ' . $project['name'] . ' from cvs.drupal.org.');
   }
 }

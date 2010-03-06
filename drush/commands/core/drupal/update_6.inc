@@ -1,5 +1,5 @@
 <?php
-// $Id: update_6.inc,v 1.8 2009/05/27 00:40:59 grugnog Exp $
+// $Id: update_6.inc,v 1.16 2010/01/25 16:13:01 weitzman Exp $
 /**
  * @file
  *   Update.php for provisioned sites.
@@ -149,8 +149,9 @@ function update_check_incompatibility($name, $type = 'module') {
 
   // Store values of expensive functions for future use.
   if (empty($themes) || empty($modules)) {
-    $themes = _system_theme_data();
-    $modules = module_rebuild_cache();
+    drush_include_engine('drupal', 'environment');
+    $themes = drush_get_themes();
+    $modules = drush_get_modules();
   }
 
   if ($type == 'module' && isset($modules[$name])) {
@@ -273,9 +274,8 @@ function update_create_batch_table() {
   return $ret;
 }
 
-
-function update_main() {
-  global $profile;
+function update_main_prepare() {
+ global $profile;
   // Some unavoidable errors happen because the database is not yet up-to-date.
   // Our custom error handler is not yet installed, so we just suppress them.
   drush_errors_off();
@@ -312,7 +312,7 @@ function update_main() {
     drush_set_option('user', 1);
     drush_bootstrap(DRUSH_BOOTSTRAP_DRUPAL_LOGIN);
   }
-  
+
   drupal_maintenance_theme();
 
   // This must happen *after* drupal_bootstrap(), since it calls
@@ -323,14 +323,23 @@ function update_main() {
   // not passed through the error handler) will cause a message to be printed.
   drush_errors_on();
 
+  // Perform Drupal 5.x to 6.x updates that are required for update.php to function properly.
+  _drush_log_update_sql(update_fix_d6_requirements());
 
+  // Rescan and repopulate the system table to ensure we have a full picture
+  // of the platform.
+  drush_get_projects();
 
   include_once './includes/install.inc';
   include_once './includes/batch.inc';
   drupal_load_updates();
 
-  _drush_log_update_sql(update_fix_d6_requirements());
+  // Disable anything in the {system} table that is not compatible with the current version of Drupal core.
   _drush_log_update_sql(update_fix_compatibility());
+}
+
+function update_main() {
+  update_main_prepare();
 
   $start = array();
   $has_updates = FALSE;
@@ -354,7 +363,7 @@ function update_main() {
           break;
         }
       }
-     
+
       // Record any pending updates. Used for confirmation prompt.
       foreach (array_keys($updates) as $update) {
         if ($update > $schema_version) {
@@ -374,7 +383,7 @@ function update_main() {
 
     }
   }
-  
+
 
   // Print a list of pending updates for this module and get confirmation.
   if ($has_updates) {
@@ -418,7 +427,7 @@ function update_main() {
     batch_set($batch);
     $batch =& batch_get();
     $batch['progressive'] = FALSE;
-    batch_process();
+    drush_backend_batch_process('updatedb-batch-process');
   }
   else {
     drush_log(dt("No database updates required"), 'success');
@@ -427,7 +436,7 @@ function update_main() {
 
 /**
  * A simplified version of the batch_do_one function from update.php
- * 
+ *
  * This does not mess with sessions and the like, as it will be used
  * from the command line
  */
@@ -439,9 +448,11 @@ function _update_do_one($module, $number, &$context) {
   }
 
   $function = $module .'_update_'. $number;
+  drush_log("Executing $function", 'success');
 
   if (function_exists($function)) {
     $ret = $function($context['sandbox']);
+    $context['results'][$module] = $ret;
     _drush_log_update_sql($ret);
   }
 
@@ -454,5 +465,10 @@ function _update_do_one($module, $number, &$context) {
     drupal_set_installed_schema_version($module, $number);
   }
 
+}
+
+function _update_batch_command($id) {
+  update_main_prepare();
+  drush_batch_command($id);
 }
 

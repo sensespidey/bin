@@ -1,33 +1,33 @@
 <?php
-// $Id: drupal_5.inc,v 1.5 2009/04/18 01:29:32 grugnog Exp $
+// $Id: drupal_5.inc,v 1.7 2010/01/27 16:29:19 weitzman Exp $
 
-function pm_update_filter(&$release) {
+function pm_update_filter(&$project) {
   $update = FALSE;
-  switch($release['status']) {
+  switch($project['status']) {
     case UPDATE_STATUS_CURRENT:
       $status = dt('OK');
-      $release['candidate_version'] = $release['recommended'];
+      $project['candidate_version'] = $project['recommended'];
       break;
     case UPDATE_STATUS_NOT_CURRENT:
       $status = dt('Update available');
-      pm_release_recommended($release);
+      pm_release_recommended($project);
       break;
     case UPDATE_STATUS_NOT_SECURE:
       $status = dt('SECURITY UPDATE available');
-      pm_release_recommended($release);
+      pm_release_recommended($project);
       break;
     case UPDATE_STATUS_REVOKED:
       $status = dt('Installed version REVOKED');
-      pm_release_recommended($release);
+      pm_release_recommended($project);
       break;
     case UPDATE_STATUS_NOT_SUPPORTED:
       $status = dt('Installed version not supported');
-      pm_release_recommended($release);
+      pm_release_recommended($project);
       break;
     default:
       $status = dt('Ignored: !reason', array('!reason' => $project['reason']));
-      $release['title'] = $release['name'];
-      $release['candidate_version'] = dt('Unknown');
+      $project['title'] = $project['name'];
+      $project['candidate_version'] = dt('Unknown');
       break;
   }
   return $status;

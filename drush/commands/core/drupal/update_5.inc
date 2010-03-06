@@ -1,5 +1,5 @@
 <?php
-// $Id: update_5.inc,v 1.7 2009/05/27 00:40:59 grugnog Exp $
+// $Id: update_5.inc,v 1.8 2009/12/06 12:53:38 weitzman Exp $
 
 /**
  * @file
@@ -20,7 +20,7 @@ function update_main() {
     drush_set_option('user', 1);
     drush_bootstrap(DRUSH_BOOTSTRAP_DRUPAL_LOGIN);
   }
-  
+
   include_once './includes/install.inc';
   drupal_load_updates();
 
@@ -48,7 +48,7 @@ function update_main() {
           break;
         }
       }
-      
+
       // Record any pending updates. Used for confirmation prompt.
       foreach (array_keys($updates) as $update) {
         if ($update > $schema_version) {
