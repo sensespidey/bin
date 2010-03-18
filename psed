@@ -1,0 +1,8 @@
+#!/bin/bash -v
+SRC=shift @ARGV
+echo $SRC
+DST=shift @ARGV
+echo $DST
+SED="s/${SRC}/${DST}/g" $*
+echo $SED
+perl -pi.bak -e '$SED'

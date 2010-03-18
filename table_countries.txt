@@ -1,0 +1,1683 @@
+$VAR1 = {
+          'peru' => {
+                      'NUM' => '604',
+                      'NAME' => 'PERU',
+                      'ISO2' => 'PE',
+                      'ISO3' => 'PER'
+                    },
+          'jordan' => {
+                        'NUM' => '400',
+                        'NAME' => 'JORDAN (Hashemite Kingdom of Jordan)',
+                        'ISO2' => 'JO',
+                        'ISO3' => 'JOR'
+                      },
+          'togo' => {
+                      'NUM' => '768',
+                      'NAME' => 'TOGO',
+                      'ISO2' => 'TG',
+                      'ISO3' => 'TGO'
+                    },
+          'sao' => {
+                     'NUM' => '678',
+                     'NAME' => 'SAO TOME AND PRINCIPE',
+                     'ISO2' => 'ST',
+                     'ISO3' => 'STP'
+                   },
+          'algeria' => {
+                         'NUM' => '012',
+                         'NAME' => 'ALGERIA (El Djazaïr)',
+                         'ISO2' => 'DZ',
+                         'ISO3' => 'DZA'
+                       },
+          'svalbard' => {
+                          'NUM' => '744',
+                          'NAME' => 'SVALBARD AND JAN MAYEN',
+                          'ISO2' => 'SJ',
+                          'ISO3' => 'SJM'
+                        },
+          'papua' => {
+                       'NUM' => '598',
+                       'NAME' => 'PAPUA NEW GUINEA',
+                       'ISO2' => 'PG',
+                       'ISO3' => 'PNG'
+                     },
+          'ireland' => {
+                         'NUM' => '372',
+                         'NAME' => 'IRELAND',
+                         'ISO2' => 'IE',
+                         'ISO3' => 'IRL'
+                       },
+          'burkina' => {
+                         'NUM' => '854',
+                         'NAME' => 'BURKINA FASO',
+                         'ISO2' => 'BF',
+                         'ISO3' => 'BFA'
+                       },
+          'mozambique' => {
+                            'NUM' => '508',
+                            'NAME' => 'MOZAMBIQUE (Moçambique)',
+                            'ISO2' => 'MZ',
+                            'ISO3' => 'MOZ'
+                          },
+          'qatar' => {
+                       'NUM' => '634',
+                       'NAME' => 'QATAR',
+                       'ISO2' => 'QA',
+                       'ISO3' => 'QAT'
+                     },
+          'central' => {
+                         'NUM' => '140',
+                         'NAME' => 'CENTRAL AFRICAN REPUBLIC',
+                         'ISO2' => 'CF',
+                         'ISO3' => 'CAF'
+                       },
+          'canada' => {
+                        'NUM' => '124',
+                        'NAME' => 'CANADA',
+                        'ISO2' => 'CA',
+                        'ISO3' => 'CAN'
+                      },
+          'djibouti' => {
+                          'NUM' => '262',
+                          'NAME' => 'DJIBOUTI',
+                          'ISO2' => 'DJ',
+                          'ISO3' => 'DJI'
+                        },
+          'kazakhstan' => {
+                            'NUM' => '398',
+                            'NAME' => 'KAZAKHSTAN',
+                            'ISO2' => 'KZ',
+                            'ISO3' => 'KAZ'
+                          },
+          'cocos' => {
+                       'NUM' => '166',
+                       'NAME' => 'COCOS (KEELING) ISLANDS',
+                       'ISO2' => 'CC',
+                       'ISO3' => 'CCK'
+                     },
+          'equatorial' => {
+                            'NUM' => '226',
+                            'NAME' => 'EQUATORIAL GUINEA',
+                            'ISO2' => 'GQ',
+                            'ISO3' => 'GNQ'
+                          },
+          'timor-lest.(formerly' => {
+                                      'NUM' => '626',
+                                      'NAME' => 'TIMOR-LESTE (formerly East Timor)',
+                                      'ISO2' => 'TL',
+                                      'ISO3' => 'TLS'
+                                    },
+          'oman' => {
+                      'NUM' => '512',
+                      'NAME' => 'OMAN',
+                      'ISO2' => 'OM',
+                      'ISO3' => 'OMN'
+                    },
+          'tanzania' => {
+                          'NUM' => '834',
+                          'NAME' => 'TANZANIA',
+                          'ISO2' => 'TZ',
+                          'ISO3' => 'TZA'
+                        },
+          'senegal' => {
+                         'NUM' => '686',
+                         'NAME' => 'SENEGAL',
+                         'ISO2' => 'SN',
+                         'ISO3' => 'SEN'
+                       },
+          'guam' => {
+                      'NUM' => '316',
+                      'NAME' => 'GUAM',
+                      'ISO2' => 'GU',
+                      'ISO3' => 'GUM'
+                    },
+          'israel' => {
+                        'NUM' => '376',
+                        'NAME' => 'ISRAEL',
+                        'ISO2' => 'IL',
+                        'ISO3' => 'ISR'
+                      },
+          'portugal' => {
+                          'NUM' => '620',
+                          'NAME' => 'PORTUGAL',
+                          'ISO2' => 'PT',
+                          'ISO3' => 'PRT'
+                        },
+          'niue' => {
+                      'NUM' => '570',
+                      'NAME' => 'NIUE',
+                      'ISO2' => 'NU',
+                      'ISO3' => 'NIU'
+                    },
+          'kuwait' => {
+                        'NUM' => '414',
+                        'NAME' => 'KUWAIT',
+                        'ISO2' => 'KW',
+                        'ISO3' => 'KWT'
+                      },
+          'mongolia' => {
+                          'NUM' => '496',
+                          'NAME' => 'MONGOLIA',
+                          'ISO2' => 'MN',
+                          'ISO3' => 'MNG'
+                        },
+          'korea' => {
+                       'NUM' => '410',
+                       'NAME' => 'KOREA (Republic of [South] Korea)',
+                       'ISO2' => 'KR',
+                       'ISO3' => 'KOR'
+                     },
+          'hungary' => {
+                         'NUM' => '348',
+                         'NAME' => 'HUNGARY',
+                         'ISO2' => 'HU',
+                         'ISO3' => 'HUN'
+                       },
+          'rwanda' => {
+                        'NUM' => '646',
+                        'NAME' => 'RWANDA',
+                        'ISO2' => 'RW',
+                        'ISO3' => 'RWA'
+                      },
+          'latvia' => {
+                        'NUM' => '428',
+                        'NAME' => 'LATVIA',
+                        'ISO2' => 'LV',
+                        'ISO3' => 'LVA'
+                      },
+          'guinea' => {
+                        'NUM' => '324',
+                        'NAME' => 'GUINEA',
+                        'ISO2' => 'GN',
+                        'ISO3' => 'GIN'
+                      },
+          'morocco' => {
+                         'NUM' => '504',
+                         'NAME' => 'MOROCCO',
+                         'ISO2' => 'MA',
+                         'ISO3' => 'MAR'
+                       },
+          'macao' => {
+                       'NUM' => '446',
+                       'NAME' => 'MACAO (Special Administrative Region of China)',
+                       'ISO2' => 'MO',
+                       'ISO3' => 'MAC'
+                     },
+          'comoros' => {
+                         'NUM' => '174',
+                         'NAME' => 'COMOROS',
+                         'ISO2' => 'KM',
+                         'ISO3' => 'COM'
+                       },
+          'ecuador' => {
+                         'NUM' => '218',
+                         'NAME' => 'ECUADOR',
+                         'ISO2' => 'EC',
+                         'ISO3' => 'ECU'
+                       },
+          'croatia' => {
+                         'NUM' => '191',
+                         'NAME' => 'CROATIA (Hrvatska)',
+                         'ISO2' => 'HR',
+                         'ISO3' => 'HRV'
+                       },
+          'chad' => {
+                      'NUM' => '148',
+                      'NAME' => 'CHAD (Tchad)',
+                      'ISO2' => 'TD',
+                      'ISO3' => 'TCD'
+                    },
+          'samoa' => {
+                       'NUM' => '882',
+                       'NAME' => 'SAMOA (formerly Western Samoa)',
+                       'ISO2' => 'WS',
+                       'ISO3' => 'WSM'
+                     },
+          'estonia' => {
+                         'NUM' => '233',
+                         'NAME' => 'ESTONIA',
+                         'ISO2' => 'EE',
+                         'ISO3' => 'EST'
+                       },
+          'nicaragua' => {
+                           'NUM' => '558',
+                           'NAME' => 'NICARAGUA',
+                           'ISO2' => 'NI',
+                           'ISO3' => 'NIC'
+                         },
+          'cook' => {
+                      'NUM' => '184',
+                      'NAME' => 'COOK ISLANDS',
+                      'ISO2' => 'CK',
+                      'ISO3' => 'COK'
+                    },
+          'british' => {
+                         'NUM' => '086',
+                         'NAME' => 'BRITISH INDIAN OCEAN TERRITORY',
+                         'ISO2' => 'IO',
+                         'ISO3' => 'IOT'
+                       },
+          'colombia' => {
+                          'NUM' => '170',
+                          'NAME' => 'COLOMBIA',
+                          'ISO2' => 'CO',
+                          'ISO3' => 'COL'
+                        },
+          'panama' => {
+                        'NUM' => '591',
+                        'NAME' => 'PANAMA',
+                        'ISO2' => 'PA',
+                        'ISO3' => 'PAN'
+                      },
+          'nauru' => {
+                       'NUM' => '520',
+                       'NAME' => 'NAURU',
+                       'ISO2' => 'NR',
+                       'ISO3' => 'NRU'
+                     },
+          'somalia' => {
+                         'NUM' => '706',
+                         'NAME' => 'SOMALIA',
+                         'ISO2' => 'SO',
+                         'ISO3' => 'SOM'
+                       },
+          'martinique' => {
+                            'NUM' => '474',
+                            'NAME' => 'MARTINIQUE',
+                            'ISO2' => 'MQ',
+                            'ISO3' => 'MTQ'
+                          },
+          'trinidad' => {
+                          'NUM' => '780',
+                          'NAME' => 'TRINIDAD AND TOBAGO',
+                          'ISO2' => 'TT',
+                          'ISO3' => 'TTO'
+                        },
+          'japan' => {
+                       'NUM' => '392',
+                       'NAME' => 'JAPAN',
+                       'ISO2' => 'JP',
+                       'ISO3' => 'JPN'
+                     },
+          'chile' => {
+                       'NUM' => '152',
+                       'NAME' => 'CHILE',
+                       'ISO2' => 'CL',
+                       'ISO3' => 'CHL'
+                     },
+          'venezuela' => {
+                           'NUM' => '862',
+                           'NAME' => 'VENEZUELA',
+                           'ISO2' => 'VE',
+                           'ISO3' => 'VEN'
+                         },
+          'taiwan' => {
+                        'NUM' => '158',
+                        'NAME' => 'TAIWAN ("Chinese Taipei" for IOC)',
+                        'ISO2' => 'TW',
+                        'ISO3' => 'TWN'
+                      },
+          'mayotte' => {
+                         'NUM' => '175',
+                         'NAME' => 'MAYOTTE',
+                         'ISO2' => 'YT',
+                         'ISO3' => 'MYT'
+                       },
+          'lesotho' => {
+                         'NUM' => '426',
+                         'NAME' => 'LESOTHO',
+                         'ISO2' => 'LS',
+                         'ISO3' => 'LSO'
+                       },
+          'ethiopia' => {
+                          'NUM' => '231',
+                          'NAME' => 'ETHIOPIA',
+                          'ISO2' => 'ET',
+                          'ISO3' => 'ETH'
+                        },
+          'france' => {
+                        'NUM' => '250',
+                        'NAME' => 'FRANCE',
+                        'ISO2' => 'FR',
+                        'ISO3' => 'FRA'
+                      },
+          'bahrain' => {
+                         'NUM' => '048',
+                         'NAME' => 'BAHRAIN',
+                         'ISO2' => 'BH',
+                         'ISO3' => 'BHR'
+                       },
+          'grenada' => {
+                         'NUM' => '308',
+                         'NAME' => 'GRENADA',
+                         'ISO2' => 'GD',
+                         'ISO3' => 'GRD'
+                       },
+          'argentina' => {
+                           'NUM' => '032',
+                           'NAME' => 'ARGENTINA',
+                           'ISO2' => 'AR',
+                           'ISO3' => 'ARG'
+                         },
+          'tokelau' => {
+                         'NUM' => '772',
+                         'NAME' => 'TOKELAU',
+                         'ISO2' => 'TK',
+                         'ISO3' => 'TKL'
+                       },
+          'sierra' => {
+                        'NUM' => '694',
+                        'NAME' => 'SIERRA LEONE',
+                        'ISO2' => 'SL',
+                        'ISO3' => 'SLE'
+                      },
+          'luxembourg' => {
+                            'NUM' => '442',
+                            'NAME' => 'LUXEMBOURG',
+                            'ISO2' => 'LU',
+                            'ISO3' => 'LUX'
+                          },
+          'belize' => {
+                        'NUM' => '084',
+                        'NAME' => 'BELIZE',
+                        'ISO2' => 'BZ',
+                        'ISO3' => 'BLZ'
+                      },
+          'philippines' => {
+                             'NUM' => '608',
+                             'NAME' => 'PHILIPPINES',
+                             'ISO2' => 'PH',
+                             'ISO3' => 'PHL'
+                           },
+          'iceland' => {
+                         'NUM' => '352',
+                         'NAME' => 'ICELAND',
+                         'ISO2' => 'IS',
+                         'ISO3' => 'ISL'
+                       },
+          'european' => {
+                          'NUM' => ' ',
+                          'NAME' => 'EUROPEAN UNION',
+                          'ISO2' => ' ',
+                          'ISO3' => ' '
+                        },
+          'kyrgyzstan' => {
+                            'NUM' => '417',
+                            'NAME' => 'KYRGYZSTAN',
+                            'ISO2' => 'KG',
+                            'ISO3' => 'KGZ'
+                          },
+          'virgin' => {
+                        'NUM' => '850',
+                        'NAME' => 'VIRGIN ISLANDS, U.S.',
+                        'ISO2' => 'VI',
+                        'ISO3' => 'VIR'
+                      },
+          'libya' => {
+                       'NUM' => '434',
+                       'NAME' => 'LIBYA (Libyan Arab Jamahirya)',
+                       'ISO2' => 'LY',
+                       'ISO3' => 'LBY'
+                     },
+          'russian' => {
+                         'NUM' => '643',
+                         'NAME' => 'RUSSIAN FEDERATION',
+                         'ISO2' => 'RU',
+                         'ISO3' => 'RUS'
+                       },
+          'singapore' => {
+                           'NUM' => '702',
+                           'NAME' => 'SINGAPORE',
+                           'ISO2' => 'SG',
+                           'ISO3' => 'SGP'
+                         },
+          'greece' => {
+                        'NUM' => '300',
+                        'NAME' => 'GREECE',
+                        'ISO2' => 'GR',
+                        'ISO3' => 'GRC'
+                      },
+          'poland' => {
+                        'NUM' => '616',
+                        'NAME' => 'POLAND',
+                        'ISO2' => 'PL',
+                        'ISO3' => 'POL'
+                      },
+          'antigua' => {
+                         'NUM' => '028',
+                         'NAME' => 'ANTIGUA AND BARBUDA',
+                         'ISO2' => 'AG',
+                         'ISO3' => 'ATG'
+                       },
+          'guinea-bissau' => {
+                               'NUM' => '624',
+                               'NAME' => 'GUINEA-BISSAU',
+                               'ISO2' => 'GW',
+                               'ISO3' => 'GNB'
+                             },
+          'christmas' => {
+                           'NUM' => '162',
+                           'NAME' => 'CHRISTMAS ISLAND',
+                           'ISO2' => 'CX',
+                           'ISO3' => 'CXR'
+                         },
+          'lao' => {
+                     'NUM' => '418',
+                     'NAME' => 'LAO PEOPLE\'S DEMOCRATIC REPUBLIC',
+                     'ISO2' => 'LA',
+                     'ISO3' => 'LAO'
+                   },
+          'finland' => {
+                         'NUM' => '246',
+                         'NAME' => 'FINLAND',
+                         'ISO2' => 'FI',
+                         'ISO3' => 'FIN'
+                       },
+          'niger' => {
+                       'NUM' => '562',
+                       'NAME' => 'NIGER',
+                       'ISO2' => 'NE',
+                       'ISO3' => 'NER'
+                     },
+          'sweden' => {
+                        'NUM' => '752',
+                        'NAME' => 'SWEDEN',
+                        'ISO2' => 'SE',
+                        'ISO3' => 'SWE'
+                      },
+          'san' => {
+                     'NUM' => '674',
+                     'NAME' => 'SAN MARINO (Republic of)',
+                     'ISO2' => 'SM',
+                     'ISO3' => 'SMR'
+                   },
+          'cayman' => {
+                        'NUM' => '136',
+                        'NAME' => 'CAYMAN ISLANDS',
+                        'ISO2' => 'KY',
+                        'ISO3' => 'CYM'
+                      },
+          'malawi' => {
+                        'NUM' => '454',
+                        'NAME' => 'MALAWI',
+                        'ISO2' => 'MW',
+                        'ISO3' => 'MWI'
+                      },
+          'ascension' => {
+                           'NUM' => ' ',
+                           'NAME' => 'ASCENSION ISLAND',
+                           'ISO2' => ' ',
+                           'ISO3' => ' '
+                         },
+          'czech' => {
+                       'NUM' => '203',
+                       'NAME' => 'CZECH REPUBLIC',
+                       'ISO2' => 'CZ',
+                       'ISO3' => 'CZE'
+                     },
+          'ghana' => {
+                       'NUM' => '288',
+                       'NAME' => 'GHANA',
+                       'ISO2' => 'GH',
+                       'ISO3' => 'GHA'
+                     },
+          'mexico' => {
+                        'NUM' => '484',
+                        'NAME' => 'MEXICO',
+                        'ISO2' => 'MX',
+                        'ISO3' => 'MEX'
+                      },
+          'malaysia' => {
+                          'NUM' => '458',
+                          'NAME' => 'MALAYSIA',
+                          'ISO2' => 'MY',
+                          'ISO3' => 'MYS'
+                        },
+          'viet' => {
+                      'NUM' => '704',
+                      'NAME' => 'VIET NAM',
+                      'ISO2' => 'VN',
+                      'ISO3' => 'VNM'
+                    },
+          'cyprus' => {
+                        'NUM' => '196',
+                        'NAME' => 'CYPRUS',
+                        'ISO2' => 'CY',
+                        'ISO3' => 'CYP'
+                      },
+          'soviet' => {
+                        'NUM' => ' ',
+                        'NAME' => 'SOVIET UNION (Internet code still used)',
+                        'ISO2' => ' ',
+                        'ISO3' => ' '
+                      },
+          'aruba' => {
+                       'NUM' => '533',
+                       'NAME' => 'ARUBA',
+                       'ISO2' => 'AW',
+                       'ISO3' => 'ABW'
+                     },
+          'ukraine' => {
+                         'NUM' => '804',
+                         'NAME' => 'UKRAINE',
+                         'ISO2' => 'UA',
+                         'ISO3' => 'UKR'
+                       },
+          'swaziland' => {
+                           'NUM' => '748',
+                           'NAME' => 'SWAZILAND',
+                           'ISO2' => 'SZ',
+                           'ISO3' => 'SWZ'
+                         },
+          'denmark' => {
+                         'NUM' => '208',
+                         'NAME' => 'DENMARK',
+                         'ISO2' => 'DK',
+                         'ISO3' => 'DNK'
+                       },
+          'syrian' => {
+                        'NUM' => '760',
+                        'NAME' => 'SYRIAN ARAB REPUBLIC',
+                        'ISO2' => 'SY',
+                        'ISO3' => 'SYR'
+                      },
+          'guernsey' => {
+                          'NUM' => ' ',
+                          'NAME' => 'GUERNSEY',
+                          'ISO2' => 'GG',
+                          'ISO3' => 'GGY'
+                        },
+          'bermuda' => {
+                         'NUM' => '060',
+                         'NAME' => 'BERMUDA',
+                         'ISO2' => 'BM',
+                         'ISO3' => 'BMU'
+                       },
+          'seychelles' => {
+                            'NUM' => '690',
+                            'NAME' => 'SEYCHELLES',
+                            'ISO2' => 'SC',
+                            'ISO3' => 'SYC'
+                          },
+          'pitcairn' => {
+                          'NUM' => '612',
+                          'NAME' => 'PITCAIRN',
+                          'ISO2' => 'PN',
+                          'ISO3' => 'PCN'
+                        },
+          'austria' => {
+                         'NUM' => '040',
+                         'NAME' => 'AUSTRIA',
+                         'ISO2' => 'AT',
+                         'ISO3' => 'AUT'
+                       },
+          'gibraltar' => {
+                           'NUM' => '292',
+                           'NAME' => 'GIBRALTAR',
+                           'ISO2' => 'GI',
+                           'ISO3' => 'GIB'
+                         },
+          'moldova' => {
+                         'NUM' => '498',
+                         'NAME' => 'MOLDOVA',
+                         'ISO2' => 'MD',
+                         'ISO3' => 'MDA'
+                       },
+          'malta' => {
+                       'NUM' => '470',
+                       'NAME' => 'MALTA',
+                       'ISO2' => 'MT',
+                       'ISO3' => 'MLT'
+                     },
+          'albania' => {
+                         'NUM' => '008',
+                         'NAME' => 'ALBANIA',
+                         'ISO2' => 'AL',
+                         'ISO3' => 'ALB'
+                       },
+          'palestinian' => {
+                             'NUM' => '275',
+                             'NAME' => 'PALESTINIAN TERRITORIES',
+                             'ISO2' => 'PS',
+                             'ISO3' => 'PSE'
+                           },
+          'haiti' => {
+                       'NUM' => '332',
+                       'NAME' => 'HAITI',
+                       'ISO2' => 'HT',
+                       'ISO3' => 'HTI'
+                     },
+          'andorra' => {
+                         'NUM' => '020',
+                         'NAME' => 'ANDORRA',
+                         'ISO2' => 'AD',
+                         'ISO3' => 'AND'
+                       },
+          'honduras' => {
+                          'NUM' => '340',
+                          'NAME' => 'HONDURAS',
+                          'ISO2' => 'HN',
+                          'ISO3' => 'HND'
+                        },
+          'belarus' => {
+                         'NUM' => '112',
+                         'NAME' => 'BELARUS',
+                         'ISO2' => 'BY',
+                         'ISO3' => 'BLR'
+                       },
+          'turkmenistan' => {
+                              'NUM' => '795',
+                              'NAME' => 'TURKMENISTAN',
+                              'ISO2' => 'TM',
+                              'ISO3' => 'TKM'
+                            },
+          'eritrea' => {
+                         'NUM' => '232',
+                         'NAME' => 'ERITREA',
+                         'ISO2' => 'ER',
+                         'ISO3' => 'ERI'
+                       },
+          'rÉunion' => {
+                         'NUM' => '638',
+                         'NAME' => 'RÉUNION',
+                         'ISO2' => 'RE',
+                         'ISO3' => 'REU'
+                       },
+          'india' => {
+                       'NUM' => '356',
+                       'NAME' => 'INDIA',
+                       'ISO2' => 'IN',
+                       'ISO3' => 'IND'
+                     },
+          'thailand' => {
+                          'NUM' => '764',
+                          'NAME' => 'THAILAND',
+                          'ISO2' => 'TH',
+                          'ISO3' => 'THA'
+                        },
+          'antarctica' => {
+                            'NUM' => '010',
+                            'NAME' => 'ANTARCTICA',
+                            'ISO2' => 'AQ',
+                            'ISO3' => 'ATA'
+                          },
+          'turkey' => {
+                        'NUM' => '792',
+                        'NAME' => 'TURKEY',
+                        'ISO2' => 'TR',
+                        'ISO3' => 'TUR'
+                      },
+          'montenegro' => {
+                            'NUM' => '499',
+                            'NAME' => 'MONTENEGRO',
+                            'ISO2' => 'ME',
+                            'ISO3' => 'MNE'
+                          },
+          'australia' => {
+                           'NUM' => '036',
+                           'NAME' => 'AUSTRALIA',
+                           'ISO2' => 'AU',
+                           'ISO3' => 'AUS'
+                         },
+          'bulgaria' => {
+                          'NUM' => '100',
+                          'NAME' => 'BULGARIA',
+                          'ISO2' => 'BG',
+                          'ISO3' => 'BGR'
+                        },
+          'guadeloupe' => {
+                            'NUM' => '312',
+                            'NAME' => 'GUADELOUPE',
+                            'ISO2' => 'GP',
+                            'ISO3' => 'GLP'
+                          },
+          'saudi' => {
+                       'NUM' => '682',
+                       'NAME' => 'SAUDI ARABIA (Kingdom of Saudi Arabia)',
+                       'ISO2' => 'SA',
+                       'ISO3' => 'SAU'
+                     },
+          'serbia' => {
+                        'NUM' => '688',
+                        'NAME' => 'SERBIA (Republic of Serbia)',
+                        'ISO2' => 'RS',
+                        'ISO3' => 'SRB'
+                      },
+          'burundi' => {
+                         'NUM' => '108',
+                         'NAME' => 'BURUNDI',
+                         'ISO2' => 'BI',
+                         'ISO3' => 'BDI'
+                       },
+          'western' => {
+                         'NUM' => '732',
+                         'NAME' => 'WESTERN SAHARA (formerly Spanish Sahara)',
+                         'ISO2' => 'EH',
+                         'ISO3' => 'ESH'
+                       },
+          'yugoslavia' => {
+                            'NUM' => ' ',
+                            'NAME' => 'YUGOSLAVIA (Internet code still used)',
+                            'ISO2' => ' ',
+                            'ISO3' => ' '
+                          },
+          'spain' => {
+                       'NUM' => '724',
+                       'NAME' => 'SPAIN (España)',
+                       'ISO2' => 'ES',
+                       'ISO3' => 'ESP'
+                     },
+          'italy' => {
+                       'NUM' => '380',
+                       'NAME' => 'ITALY',
+                       'ISO2' => 'IT',
+                       'ISO3' => 'ITA'
+                     },
+          'tanganyika' => {
+                            'NUM' => ' ',
+                            'NAME' => 'TANGANYIKA',
+                            'ISO2' => ' ',
+                            'ISO3' => ' '
+                          },
+          'slovenia' => {
+                          'NUM' => '705',
+                          'NAME' => 'SLOVENIA',
+                          'ISO2' => 'SI',
+                          'ISO3' => 'SVN'
+                        },
+          'armenia' => {
+                         'NUM' => '051',
+                         'NAME' => 'ARMENIA',
+                         'ISO2' => 'AM',
+                         'ISO3' => 'ARM'
+                       },
+          'macedonia' => {
+                           'NUM' => '807',
+                           'NAME' => 'MACEDONIA (Former Yugoslav Republic of Macedonia)',
+                           'ISO2' => 'MK',
+                           'ISO3' => 'MKD'
+                         },
+          'Åland' => {
+                       'NUM' => '248',
+                       'NAME' => 'ÅLAND ISLANDS',
+                       'ISO2' => 'AX',
+                       'ISO3' => 'ALA'
+                     },
+          'south' => {
+                       'NUM' => '239',
+                       'NAME' => 'SOUTH GEORGIA AND THE SOUTH SANDWICH ISLANDS',
+                       'ISO2' => 'GS',
+                       'ISO3' => 'SGS'
+                     },
+          'jamaica' => {
+                         'NUM' => '388',
+                         'NAME' => 'JAMAICA',
+                         'ISO2' => 'JM',
+                         'ISO3' => 'JAM'
+                       },
+          'norway' => {
+                        'NUM' => '578',
+                        'NAME' => 'NORWAY',
+                        'ISO2' => 'NO',
+                        'ISO3' => 'NOR'
+                      },
+          'bosnia' => {
+                        'NUM' => '070',
+                        'NAME' => 'BOSNIA AND HERZEGOVINA',
+                        'ISO2' => 'BA',
+                        'ISO3' => 'BIH'
+                      },
+          'kenya' => {
+                       'NUM' => '404',
+                       'NAME' => 'KENYA',
+                       'ISO2' => 'KE',
+                       'ISO3' => 'KEN'
+                     },
+          'puerto' => {
+                        'NUM' => '630',
+                        'NAME' => 'PUERTO RICO',
+                        'ISO2' => 'PR',
+                        'ISO3' => 'PRI'
+                      },
+          'germany' => {
+                         'NUM' => '276',
+                         'NAME' => 'GERMANY (Deutschland)',
+                         'ISO2' => 'DE',
+                         'ISO3' => 'DEU'
+                       },
+          'myanmar' => {
+                         'NUM' => '104',
+                         'NAME' => 'MYANMAR (formerly Burma)',
+                         'ISO2' => 'MM',
+                         'ISO3' => 'MMR'
+                       },
+          'madagascar' => {
+                            'NUM' => '450',
+                            'NAME' => 'MADAGASCAR',
+                            'ISO2' => 'MG',
+                            'ISO3' => 'MDG'
+                          },
+          'greenland' => {
+                           'NUM' => '304',
+                           'NAME' => 'GREENLAND',
+                           'ISO2' => 'GL',
+                           'ISO3' => 'GRL'
+                         },
+          'guatemala' => {
+                           'NUM' => '320',
+                           'NAME' => 'GUATEMALA',
+                           'ISO2' => 'GT',
+                           'ISO3' => 'GTM'
+                         },
+          'vatican' => {
+                         'NUM' => '336',
+                         'NAME' => 'VATICAN CITY (Holy See)',
+                         'ISO2' => 'VA',
+                         'ISO3' => 'VAT'
+                       },
+          'marshall' => {
+                          'NUM' => '584',
+                          'NAME' => 'MARSHALL ISLANDS',
+                          'ISO2' => 'MH',
+                          'ISO3' => 'MHL'
+                        },
+          'faeroe' => {
+                        'NUM' => '234',
+                        'NAME' => 'FAEROE ISLANDS',
+                        'ISO2' => 'FO',
+                        'ISO3' => 'FRO'
+                      },
+          'belgium' => {
+                         'NUM' => '056',
+                         'NAME' => 'BELGIUM',
+                         'ISO2' => 'BE',
+                         'ISO3' => 'BEL'
+                       },
+          'turks' => {
+                       'NUM' => '796',
+                       'NAME' => 'TURKS AND CAICOS ISLANDS',
+                       'ISO2' => 'TC',
+                       'ISO3' => 'TCA'
+                     },
+          'montserrat' => {
+                            'NUM' => '500',
+                            'NAME' => 'MONTSERRAT',
+                            'ISO2' => 'MS',
+                            'ISO3' => 'MSR'
+                          },
+          'cameroon' => {
+                          'NUM' => '120',
+                          'NAME' => 'CAMEROON',
+                          'ISO2' => 'CM',
+                          'ISO3' => 'CMR'
+                        },
+          'lebanon' => {
+                         'NUM' => '422',
+                         'NAME' => 'LEBANON',
+                         'ISO2' => 'LB',
+                         'ISO3' => 'LBN'
+                       },
+          'solomon' => {
+                         'NUM' => '90',
+                         'NAME' => 'SOLOMON ISLANDS',
+                         'ISO2' => 'SB',
+                         'ISO3' => 'SLB'
+                       },
+          'hong' => {
+                      'NUM' => '344',
+                      'NAME' => 'HONG KONG (Special Administrative Region of China)',
+                      'ISO2' => 'HK',
+                      'ISO3' => 'HKG'
+                    },
+          'palau' => {
+                       'NUM' => '585',
+                       'NAME' => 'PALAU',
+                       'ISO2' => 'PW',
+                       'ISO3' => 'PLW'
+                     },
+          'channel' => {
+                         'NUM' => '830',
+                         'NAME' => 'CHANNEL ISLANDS',
+                         'ISO2' => '',
+                         'ISO3' => ''
+                       },
+          'pakistan' => {
+                          'NUM' => '586',
+                          'NAME' => 'PAKISTAN',
+                          'ISO2' => 'PK',
+                          'ISO3' => 'PAK'
+                        },
+          'namibia' => {
+                         'NUM' => '516',
+                         'NAME' => 'NAMIBIA',
+                         'ISO2' => 'NA',
+                         'ISO3' => 'NAM'
+                       },
+          'brazil' => {
+                        'NUM' => '076',
+                        'NAME' => 'BRAZIL',
+                        'ISO2' => 'BR',
+                        'ISO3' => 'BRA'
+                      },
+          'brunei' => {
+                        'NUM' => '096',
+                        'NAME' => 'BRUNEI DARUSSALAM',
+                        'ISO2' => 'BN',
+                        'ISO3' => 'BRN'
+                      },
+          'micronesia' => {
+                            'NUM' => '583',
+                            'NAME' => 'MICRONESIA (Federated States of Micronesia)',
+                            'ISO2' => 'FM',
+                            'ISO3' => 'FSM'
+                          },
+          'french' => {
+                        'NUM' => '260',
+                        'NAME' => 'FRENCH SOUTHERN TERRITORIES',
+                        'ISO2' => 'TF',
+                        'ISO3' => 'ATF'
+                      },
+          'georgia' => {
+                         'NUM' => '268',
+                         'NAME' => 'GEORGIA',
+                         'ISO2' => 'GE',
+                         'ISO3' => 'GEO'
+                       },
+          'dominica' => {
+                          'NUM' => '212',
+                          'NAME' => 'DOMINICA',
+                          'ISO2' => 'DM',
+                          'ISO3' => 'DMA'
+                        },
+          'gambia,' => {
+                         'NUM' => '270',
+                         'NAME' => 'GAMBIA, THE',
+                         'ISO2' => 'GM',
+                         'ISO3' => 'GMB'
+                       },
+          'benin' => {
+                       'NUM' => '204',
+                       'NAME' => 'BENIN',
+                       'ISO2' => 'BJ',
+                       'ISO3' => 'BEN'
+                     },
+          'dominican' => {
+                           'NUM' => '214',
+                           'NAME' => 'DOMINICAN REPUBLIC',
+                           'ISO2' => 'DO',
+                           'ISO3' => 'DOM'
+                         },
+          'sri' => {
+                     'NUM' => '144',
+                     'NAME' => 'SRI LANKA (formerly Ceylon)',
+                     'ISO2' => 'LK',
+                     'ISO3' => 'LKA'
+                   },
+          'mali' => {
+                      'NUM' => '466',
+                      'NAME' => 'MALI',
+                      'ISO2' => 'ML',
+                      'ISO3' => 'MLI'
+                    },
+          'congo,' => {
+                        'NUM' => '180',
+                        'NAME' => 'CONGO, THE DEMOCRATIC REPUBLIC OF THE (formerly Zaire)',
+                        'ISO2' => 'CD',
+                        'ISO3' => 'COD'
+                      },
+          'kiribati' => {
+                          'NUM' => '296',
+                          'NAME' => 'KIRIBATI',
+                          'ISO2' => 'KI',
+                          'ISO3' => 'KIR'
+                        },
+          'norfolk' => {
+                         'NUM' => '574',
+                         'NAME' => 'NORFOLK ISLAND',
+                         'ISO2' => 'NF',
+                         'ISO3' => 'NFK'
+                       },
+          'cost.rica' => {
+                           'NUM' => '188',
+                           'NAME' => 'COSTA RICA',
+                           'ISO2' => 'CR',
+                           'ISO3' => 'CRI'
+                         },
+          'uzbekistan' => {
+                            'NUM' => '860',
+                            'NAME' => 'UZBEKISTAN',
+                            'ISO2' => 'UZ',
+                            'ISO3' => 'UZB'
+                          },
+          'guyana' => {
+                        'NUM' => '328',
+                        'NAME' => 'GUYANA',
+                        'ISO2' => 'GY',
+                        'ISO3' => 'GUY'
+                      },
+          'bolivia' => {
+                         'NUM' => '068',
+                         'NAME' => 'BOLIVIA',
+                         'ISO2' => 'BO',
+                         'ISO3' => 'BOL'
+                       },
+          'gabon' => {
+                       'NUM' => '266',
+                       'NAME' => 'GABON',
+                       'ISO2' => 'GA',
+                       'ISO3' => 'GAB'
+                     },
+          'iraq' => {
+                      'NUM' => '368',
+                      'NAME' => 'IRAQ',
+                      'ISO2' => 'IQ',
+                      'ISO3' => 'IRQ'
+                    },
+          'american' => {
+                          'NUM' => '016',
+                          'NAME' => 'AMERICAN SAMOA',
+                          'ISO2' => 'AS',
+                          'ISO3' => 'ASM'
+                        },
+          'china' => {
+                       'NUM' => '156',
+                       'NAME' => 'CHINA',
+                       'ISO2' => 'CN',
+                       'ISO3' => 'CHN'
+                     },
+          'cuba' => {
+                      'NUM' => '192',
+                      'NAME' => 'CUBA',
+                      'ISO2' => 'CU',
+                      'ISO3' => 'CUB'
+                    },
+          'bahamas' => {
+                         'NUM' => '044',
+                         'NAME' => 'BAHAMAS',
+                         'ISO2' => 'BS',
+                         'ISO3' => 'BHS'
+                       },
+          'slovakia' => {
+                          'NUM' => '703',
+                          'NAME' => 'SLOVAKIA (Slovak Republic)',
+                          'ISO2' => 'SK',
+                          'ISO3' => 'SVK'
+                        },
+          'lithuania' => {
+                           'NUM' => '440',
+                           'NAME' => 'LITHUANIA',
+                           'ISO2' => 'LT',
+                           'ISO3' => 'LTU'
+                         },
+          'netherlands' => {
+                             'NUM' => '530',
+                             'NAME' => 'NETHERLANDS ANTILLES',
+                             'ISO2' => 'AN',
+                             'ISO3' => 'ANT'
+                           },
+          'nigeria' => {
+                         'NUM' => '566',
+                         'NAME' => 'NIGERIA',
+                         'ISO2' => 'NG',
+                         'ISO3' => 'NGA'
+                       },
+          'vanuatu' => {
+                         'NUM' => '548',
+                         'NAME' => 'VANUATU',
+                         'ISO2' => 'VU',
+                         'ISO3' => 'VUT'
+                       },
+          'bhutan' => {
+                        'NUM' => '064',
+                        'NAME' => 'BHUTAN',
+                        'ISO2' => 'BT',
+                        'ISO3' => 'BTN'
+                      },
+          'iran' => {
+                      'NUM' => '364',
+                      'NAME' => 'IRAN (Islamic Republic of Iran)',
+                      'ISO2' => 'IR',
+                      'ISO3' => 'IRN'
+                    },
+          'liberia' => {
+                         'NUM' => '430',
+                         'NAME' => 'LIBERIA',
+                         'ISO2' => 'LR',
+                         'ISO3' => 'LBR'
+                       },
+          'cape' => {
+                      'NUM' => '132',
+                      'NAME' => 'CAPE VERDE',
+                      'ISO2' => 'CV',
+                      'ISO3' => 'CPV'
+                    },
+          'new' => {
+                     'NUM' => '554',
+                     'NAME' => 'NEW ZEALAND',
+                     'ISO2' => 'NZ',
+                     'ISO3' => 'NZL'
+                   },
+          'cÔte' => {
+                      'NUM' => '384',
+                      'NAME' => 'CÔTE D\'IVOIRE (Ivory Coast)',
+                      'ISO2' => 'CI',
+                      'ISO3' => 'CIV'
+                    },
+          'zanzibar' => {
+                          'NUM' => ' ',
+                          'NAME' => 'ZANZIBAR',
+                          'ISO2' => ' ',
+                          'ISO3' => ' '
+                        },
+          'switzerland' => {
+                             'NUM' => '756',
+                             'NAME' => 'SWITZERLAND (Confederation of Helvetia)',
+                             'ISO2' => 'CH',
+                             'ISO3' => 'CHE'
+                           },
+          'indonesia' => {
+                           'NUM' => '360',
+                           'NAME' => 'INDONESIA',
+                           'ISO2' => 'ID',
+                           'ISO3' => 'IDN'
+                         },
+          'sudan' => {
+                       'NUM' => '736',
+                       'NAME' => 'SUDAN',
+                       'ISO2' => 'SD',
+                       'ISO3' => 'SDN'
+                     },
+          'egypt' => {
+                       'NUM' => '818',
+                       'NAME' => 'EGYPT',
+                       'ISO2' => 'EG',
+                       'ISO3' => 'EGY'
+                     },
+          'saint' => {
+                       'NUM' => '670',
+                       'NAME' => 'SAINT VINCENT AND THE GRENADINES',
+                       'ISO2' => 'VC',
+                       'ISO3' => 'VCT'
+                     },
+          'tajikistan' => {
+                            'NUM' => '762',
+                            'NAME' => 'TAJIKISTAN',
+                            'ISO2' => 'TJ',
+                            'ISO3' => 'TJK'
+                          },
+          'romania' => {
+                         'NUM' => '642',
+                         'NAME' => 'ROMANIA',
+                         'ISO2' => 'RO',
+                         'ISO3' => 'ROU'
+                       },
+          'falkland' => {
+                          'NUM' => '238',
+                          'NAME' => 'FALKLAND ISLANDS (MALVINAS)',
+                          'ISO2' => 'FK',
+                          'ISO3' => 'FLK'
+                        },
+          'heard' => {
+                       'NUM' => '334',
+                       'NAME' => 'HEARD ISLAND AND MCDONALD ISLANDS',
+                       'ISO2' => 'HM',
+                       'ISO3' => 'HMD'
+                     },
+          'united' => {
+                        'NUM' => '581',
+                        'NAME' => 'UNITED STATES MINOR OUTLYING ISLANDS',
+                        'ISO2' => 'UM',
+                        'ISO3' => 'UMI'
+                      },
+          'botswana' => {
+                          'NUM' => '072',
+                          'NAME' => 'BOTSWANA',
+                          'ISO2' => 'BW',
+                          'ISO3' => 'BWA'
+                        },
+          'jersey' => {
+                        'NUM' => ' ',
+                        'NAME' => 'JERSEY',
+                        'ISO2' => 'JE',
+                        'ISO3' => 'JEY'
+                      },
+          'bouvet' => {
+                        'NUM' => '074',
+                        'NAME' => 'BOUVET ISLAND',
+                        'ISO2' => 'BV',
+                        'ISO3' => 'BVT'
+                      },
+          'northern' => {
+                          'NUM' => '580',
+                          'NAME' => 'NORTHERN MARIANA ISLANDS',
+                          'ISO2' => 'MP',
+                          'ISO3' => 'MNP'
+                        },
+          'angola' => {
+                        'NUM' => '024',
+                        'NAME' => 'ANGOLA',
+                        'ISO2' => 'AO',
+                        'ISO3' => 'AGO'
+                      },
+          'yemen' => {
+                       'NUM' => '887',
+                       'NAME' => 'YEMEN (Yemen Arab Republic)',
+                       'ISO2' => 'YE',
+                       'ISO3' => 'YEM'
+                     },
+          'tunisia' => {
+                         'NUM' => '788',
+                         'NAME' => 'TUNISIA',
+                         'ISO2' => 'TN',
+                         'ISO3' => 'TUN'
+                       },
+          'alderney' => {
+                          'NUM' => ' ',
+                          'NAME' => 'ALDERNEY',
+                          'ISO2' => ' ',
+                          'ISO3' => ' '
+                        },
+          'zimbabwe' => {
+                          'NUM' => '716',
+                          'NAME' => 'ZIMBABWE',
+                          'ISO2' => 'ZW',
+                          'ISO3' => 'ZWE'
+                        },
+          'zambia' => {
+                        'NUM' => '894',
+                        'NAME' => 'ZAMBIA (formerly Northern Rhodesia)',
+                        'ISO2' => 'ZM',
+                        'ISO3' => 'ZMB'
+                      },
+          'afghanistan' => {
+                             'NUM' => '004',
+                             'NAME' => 'AFGHANISTAN',
+                             'ISO2' => 'AF',
+                             'ISO3' => 'AFG'
+                           },
+          'maldives' => {
+                          'NUM' => '462',
+                          'NAME' => 'MALDIVES',
+                          'ISO2' => 'MV',
+                          'ISO3' => 'MDV'
+                        },
+          'mauritania' => {
+                            'NUM' => '478',
+                            'NAME' => 'MAURITANIA',
+                            'ISO2' => 'MR',
+                            'ISO3' => 'MRT'
+                          },
+          'great' => {
+                       'NUM' => '826',
+                       'NAME' => 'GREAT BRITAIN',
+                       'ISO2' => 'GB',
+                       'ISO3' => 'GBR'
+                     },
+          'anguilla' => {
+                          'NUM' => '660',
+                          'NAME' => 'ANGUILLA',
+                          'ISO2' => 'AI',
+                          'ISO3' => 'AIA'
+                        },
+          'uruguay' => {
+                         'NUM' => '858',
+                         'NAME' => 'URUGUAY',
+                         'ISO2' => 'UY',
+                         'ISO3' => 'URY'
+                       },
+          'tonga' => {
+                       'NUM' => '776',
+                       'NAME' => 'TONGA',
+                       'ISO2' => 'TO',
+                       'ISO3' => 'TON'
+                     },
+          'nepal' => {
+                       'NUM' => '524',
+                       'NAME' => 'NEPAL',
+                       'ISO2' => 'NP',
+                       'ISO3' => 'NPL'
+                     },
+          'monaco' => {
+                        'NUM' => '492',
+                        'NAME' => 'MONACO',
+                        'ISO2' => 'MC',
+                        'ISO3' => 'MCO'
+                      },
+          'bangladesh' => {
+                            'NUM' => '050',
+                            'NAME' => 'BANGLADESH',
+                            'ISO2' => 'BD',
+                            'ISO3' => 'BGD'
+                          },
+          'mauritius' => {
+                           'NUM' => '480',
+                           'NAME' => 'MAURITIUS',
+                           'ISO2' => 'MU',
+                           'ISO3' => 'MUS'
+                         },
+          'barbados' => {
+                          'NUM' => '052',
+                          'NAME' => 'BARBADOS',
+                          'ISO2' => 'BB',
+                          'ISO3' => 'BRB'
+                        },
+          'paraguay' => {
+                          'NUM' => '600',
+                          'NAME' => 'PARAGUAY',
+                          'ISO2' => 'PY',
+                          'ISO3' => 'PRY'
+                        },
+          'cambodia' => {
+                          'NUM' => '116',
+                          'NAME' => 'CAMBODIA',
+                          'ISO2' => 'KH',
+                          'ISO3' => 'KHM'
+                        },
+          'isle' => {
+                      'NUM' => '833',
+                      'NAME' => 'ISLE OF MAN',
+                      'ISO2' => 'IM',
+                      'ISO3' => 'IMN'
+                    },
+          'wallis' => {
+                        'NUM' => '876',
+                        'NAME' => 'WALLIS AND FUTUNA',
+                        'ISO2' => 'WF',
+                        'ISO3' => 'WLF'
+                      },
+          'uganda' => {
+                        'NUM' => '800',
+                        'NAME' => 'UGANDA',
+                        'ISO2' => 'UG',
+                        'ISO3' => 'UGA'
+                      },
+          'azerbaijan' => {
+                            'NUM' => '031',
+                            'NAME' => 'AZERBAIJAN',
+                            'ISO2' => 'AZ',
+                            'ISO3' => 'AZE'
+                          },
+          'liechtenstein' => {
+                               'NUM' => '438',
+                               'NAME' => 'LIECHTENSTEIN (Fürstentum Liechtenstein)',
+                               'ISO2' => 'LI',
+                               'ISO3' => 'LIE'
+                             },
+          'suriname' => {
+                          'NUM' => '740',
+                          'NAME' => 'SURINAME',
+                          'ISO2' => 'SR',
+                          'ISO3' => 'SUR'
+                        },
+          'el' => {
+                    'NUM' => '222',
+                    'NAME' => 'EL SALVADOR',
+                    'ISO2' => 'SV',
+                    'ISO3' => 'SLV'
+                  },
+          'tuvalu' => {
+                        'NUM' => '798',
+                        'NAME' => 'TUVALU',
+                        'ISO2' => 'TV',
+                        'ISO3' => 'TUV'
+                      },
+          'fiji' => {
+                      'NUM' => '242',
+                      'NAME' => 'FIJI',
+                      'ISO2' => 'FJ',
+                      'ISO3' => 'FJI'
+                    }
+        };
+Opening /Users/spiderman/anarres/projects/SCW/country.txt..done.
+Couldn't find Azores (014) in table.
+Couldn't find Corsica (044) in table.
+Couldn't find Kampuchea (097) in table.
+Couldn't find Madeira Islands (113) in table.
+Couldn't find Reunion (149) in table.
+Couldn't find St. Christopher & Nevis (153) in table.
+Couldn't find St. Vincent&The Grenadines (157) in table.
+Couldn't find Tristan da Cunha (182) in table.
+Couldn't find Vietnam (196) in table.
+Couldn't find La Luia (232) in table.
+Couldn't find Zaire (199) in table.
+Couldn't find Lithvania (233) in table.
+Couldn't find MocDavia (234) in table.
+Couldn't find Tadzhikistan (235) in table.
+Couldn't find Scotland (246) in table.
+Couldn't find Canary Islands (247) in table.
+
+OUTPUT:
+REPLACE INTO uc_countries VALUES (581, 'United States', 'UM', 'UMI','001',1);
+REPLACE INTO uc_countries VALUES (004, 'Afghanistan', 'AF', 'AFG','002',1);
+REPLACE INTO uc_countries VALUES (008, 'Albania', 'AL', 'ALB','003',1);
+REPLACE INTO uc_countries VALUES (012, 'Algeria', 'DZ', 'DZA','004',1);
+REPLACE INTO uc_countries VALUES (020, 'Andorra', 'AD', 'AND','005',1);
+REPLACE INTO uc_countries VALUES (024, 'Angola', 'AO', 'AGO','006',1);
+REPLACE INTO uc_countries VALUES (660, 'Anguilla', 'AI', 'AIA','007',1);
+REPLACE INTO uc_countries VALUES (028, 'Antigua & Barbuda', 'AG', 'ATG','008',1);
+REPLACE INTO uc_countries VALUES (032, 'Argentina', 'AR', 'ARG','009',1);
+REPLACE INTO uc_countries VALUES (533, 'Aruba', 'AW', 'ABW','010',1);
+REPLACE INTO uc_countries VALUES ( , 'Ascension', ' ', ' ','011',1);
+REPLACE INTO uc_countries VALUES (036, 'Australia', 'AU', 'AUS','012',1);
+REPLACE INTO uc_countries VALUES (040, 'Austria', 'AT', 'AUT','013',1);
+REPLACE INTO uc_countries VALUES (044, 'Bahamas', 'BS', 'BHS','015',1);
+REPLACE INTO uc_countries VALUES (048, 'Bahrain', 'BH', 'BHR','016',1);
+REPLACE INTO uc_countries VALUES (050, 'Bangladesh', 'BD', 'BGD','017',1);
+REPLACE INTO uc_countries VALUES (052, 'Barbados', 'BB', 'BRB','018',1);
+REPLACE INTO uc_countries VALUES (056, 'Belgium', 'BE', 'BEL','019',1);
+REPLACE INTO uc_countries VALUES (084, 'Belize', 'BZ', 'BLZ','020',1);
+REPLACE INTO uc_countries VALUES (204, 'Benin', 'BJ', 'BEN','021',1);
+REPLACE INTO uc_countries VALUES (060, 'Bermuda', 'BM', 'BMU','022',1);
+REPLACE INTO uc_countries VALUES (064, 'Bhutan', 'BT', 'BTN','023',1);
+REPLACE INTO uc_countries VALUES (068, 'Bolivia', 'BO', 'BOL','024',1);
+REPLACE INTO uc_countries VALUES (072, 'Botswana', 'BW', 'BWA','025',1);
+REPLACE INTO uc_countries VALUES (076, 'Brazil', 'BR', 'BRA','026',1);
+REPLACE INTO uc_countries VALUES (086, 'British Virgin Islands', 'IO', 'IOT','027',1);
+REPLACE INTO uc_countries VALUES (096, 'Brunei', 'BN', 'BRN','028',1);
+REPLACE INTO uc_countries VALUES (100, 'Bulgaria', 'BG', 'BGR','029',1);
+REPLACE INTO uc_countries VALUES (854, 'Burkina Faso', 'BF', 'BFA','030',1);
+REPLACE INTO uc_countries VALUES (108, 'Burundi', 'BI', 'BDI','032',1);
+REPLACE INTO uc_countries VALUES (120, 'Cameroon', 'CM', 'CMR','033',1);
+REPLACE INTO uc_countries VALUES (124, 'Canada', 'CA', 'CAN','034',1);
+REPLACE INTO uc_countries VALUES (132, 'Cape Verde', 'CV', 'CPV','035',1);
+REPLACE INTO uc_countries VALUES (136, 'Cayman Islands', 'KY', 'CYM','036',1);
+REPLACE INTO uc_countries VALUES (140, 'Central African Republic', 'CF', 'CAF','037',1);
+REPLACE INTO uc_countries VALUES (148, 'Chad', 'TD', 'TCD','038',1);
+REPLACE INTO uc_countries VALUES (152, 'Chile', 'CL', 'CHL','039',1);
+REPLACE INTO uc_countries VALUES (156, 'China', 'CN', 'CHN','040',1);
+REPLACE INTO uc_countries VALUES (170, 'Colombia', 'CO', 'COL','041',1);
+REPLACE INTO uc_countries VALUES (174, 'Comoros', 'KM', 'COM','042',1);
+REPLACE INTO uc_countries VALUES (192, 'Cuba', 'CU', 'CUB','047',1);
+REPLACE INTO uc_countries VALUES (196, 'Cyprus', 'CY', 'CYP','048',1);
+REPLACE INTO uc_countries VALUES (208, 'Denmark', 'DK', 'DNK','050',1);
+REPLACE INTO uc_countries VALUES (262, 'Djibouti', 'DJ', 'DJI','051',1);
+REPLACE INTO uc_countries VALUES (212, 'Dominica', 'DM', 'DMA','052',1);
+REPLACE INTO uc_countries VALUES (214, 'Dominican Rep.', 'DO', 'DOM','053',1);
+REPLACE INTO uc_countries VALUES (218, 'Ecuador', 'EC', 'ECU','055',1);
+REPLACE INTO uc_countries VALUES (818, 'Egypt', 'EG', 'EGY','056',1);
+REPLACE INTO uc_countries VALUES (222, 'El Salvador', 'SV', 'SLV','057',1);
+REPLACE INTO uc_countries VALUES (226, 'Equatorial Guinea', 'GQ', 'GNQ','058',1);
+REPLACE INTO uc_countries VALUES (233, 'Estonia', 'EE', 'EST','059',1);
+REPLACE INTO uc_countries VALUES (231, 'Ethiopia', 'ET', 'ETH','060',1);
+REPLACE INTO uc_countries VALUES (238, 'Falkland Islands', 'FK', 'FLK','061',1);
+REPLACE INTO uc_countries VALUES (242, 'Fiji', 'FJ', 'FJI','063',1);
+REPLACE INTO uc_countries VALUES (246, 'Finland', 'FI', 'FIN','064',1);
+REPLACE INTO uc_countries VALUES (250, 'France', 'FR', 'FRA','065',1);
+REPLACE INTO uc_countries VALUES (260, 'French Guiana', 'TF', 'ATF','066',1);
+REPLACE INTO uc_countries VALUES (260, 'French Polynesia', 'TF', 'ATF','067',1);
+REPLACE INTO uc_countries VALUES (266, 'Gabon', 'GA', 'GAB','068',1);
+REPLACE INTO uc_countries VALUES (276, 'Germany', 'DE', 'DEU','070',1);
+REPLACE INTO uc_countries VALUES (288, 'Ghana', 'GH', 'GHA','071',1);
+REPLACE INTO uc_countries VALUES (292, 'Gibraltar', 'GI', 'GIB','072',1);
+REPLACE INTO uc_countries VALUES (826, 'Great Britain', 'GB', 'GBR','073',1);
+REPLACE INTO uc_countries VALUES (300, 'Greece', 'GR', 'GRC','074',1);
+REPLACE INTO uc_countries VALUES (304, 'Greenland', 'GL', 'GRL','075',1);
+REPLACE INTO uc_countries VALUES (308, 'Grenada', 'GD', 'GRD','076',1);
+REPLACE INTO uc_countries VALUES (312, 'Guadeloupe', 'GP', 'GLP','077',1);
+REPLACE INTO uc_countries VALUES (320, 'Guatemala', 'GT', 'GTM','078',1);
+REPLACE INTO uc_countries VALUES (324, 'Guinea', 'GN', 'GIN','079',1);
+REPLACE INTO uc_countries VALUES (624, 'Guinea-Bissau', 'GW', 'GNB','080',1);
+REPLACE INTO uc_countries VALUES (328, 'Guyana', 'GY', 'GUY','081',1);
+REPLACE INTO uc_countries VALUES (332, 'Haiti', 'HT', 'HTI','082',1);
+REPLACE INTO uc_countries VALUES (340, 'Honduras', 'HN', 'HND','083',1);
+REPLACE INTO uc_countries VALUES (344, 'Hong Kong', 'HK', 'HKG','084',1);
+REPLACE INTO uc_countries VALUES (348, 'Hungary', 'HU', 'HUN','085',1);
+REPLACE INTO uc_countries VALUES (352, 'Iceland', 'IS', 'ISL','086',1);
+REPLACE INTO uc_countries VALUES (356, 'India', 'IN', 'IND','087',1);
+REPLACE INTO uc_countries VALUES (360, 'Indonesia', 'ID', 'IDN','088',1);
+REPLACE INTO uc_countries VALUES (364, 'Iran', 'IR', 'IRN','089',1);
+REPLACE INTO uc_countries VALUES (368, 'Iraq', 'IQ', 'IRQ','090',1);
+REPLACE INTO uc_countries VALUES (372, 'Ireland (Eire)', 'IE', 'IRL','091',1);
+REPLACE INTO uc_countries VALUES (376, 'Israel', 'IL', 'ISR','092',1);
+REPLACE INTO uc_countries VALUES (380, 'Italy', 'IT', 'ITA','093',1);
+REPLACE INTO uc_countries VALUES (388, 'Jamaica', 'JM', 'JAM','094',1);
+REPLACE INTO uc_countries VALUES (392, 'Japan', 'JP', 'JPN','095',1);
+REPLACE INTO uc_countries VALUES (400, 'Jordan', 'JO', 'JOR','096',1);
+REPLACE INTO uc_countries VALUES (404, 'Kenya', 'KE', 'KEN','098',1);
+REPLACE INTO uc_countries VALUES (296, 'Kiribati', 'KI', 'KIR','099',1);
+REPLACE INTO uc_countries VALUES (410, 'Korea', 'KR', 'KOR','100',1);
+REPLACE INTO uc_countries VALUES (414, 'Kuwait', 'KW', 'KWT','101',1);
+REPLACE INTO uc_countries VALUES (418, 'Lao', 'LA', 'LAO','102',1);
+REPLACE INTO uc_countries VALUES (428, 'Latvia', 'LV', 'LVA','103',1);
+REPLACE INTO uc_countries VALUES (422, 'Lebanon', 'LB', 'LBN','104',1);
+REPLACE INTO uc_countries VALUES (426, 'Lesotho', 'LS', 'LSO','105',1);
+REPLACE INTO uc_countries VALUES (430, 'Liberia', 'LR', 'LBR','106',1);
+REPLACE INTO uc_countries VALUES (434, 'Libya', 'LY', 'LBY','107',1);
+REPLACE INTO uc_countries VALUES (438, 'Liechtenstein', 'LI', 'LIE','108',1);
+REPLACE INTO uc_countries VALUES (440, 'Lithuania', 'LT', 'LTU','109',1);
+REPLACE INTO uc_countries VALUES (442, 'Luxembourg', 'LU', 'LUX','110',1);
+REPLACE INTO uc_countries VALUES (446, 'Macao', 'MO', 'MAC','111',1);
+REPLACE INTO uc_countries VALUES (450, 'Madagascar', 'MG', 'MDG','112',1);
+REPLACE INTO uc_countries VALUES (454, 'Malawi', 'MW', 'MWI','114',1);
+REPLACE INTO uc_countries VALUES (458, 'Malaysia', 'MY', 'MYS','115',1);
+REPLACE INTO uc_countries VALUES (462, 'Maldives', 'MV', 'MDV','116',1);
+REPLACE INTO uc_countries VALUES (466, 'Mali', 'ML', 'MLI','117',1);
+REPLACE INTO uc_countries VALUES (470, 'Malta', 'MT', 'MLT','118',1);
+REPLACE INTO uc_countries VALUES (474, 'Martinique', 'MQ', 'MTQ','119',1);
+REPLACE INTO uc_countries VALUES (478, 'Mauritania', 'MR', 'MRT','120',1);
+REPLACE INTO uc_countries VALUES (480, 'Mauritius', 'MU', 'MUS','121',1);
+REPLACE INTO uc_countries VALUES (484, 'Mexico', 'MX', 'MEX','122',1);
+REPLACE INTO uc_countries VALUES (492, 'Monaco', 'MC', 'MCO','123',1);
+REPLACE INTO uc_countries VALUES (496, 'Mongolia', 'MN', 'MNG','124',1);
+REPLACE INTO uc_countries VALUES (500, 'Montserrat', 'MS', 'MSR','125',1);
+REPLACE INTO uc_countries VALUES (504, 'Morocco', 'MA', 'MAR','126',1);
+REPLACE INTO uc_countries VALUES (508, 'Mozambique', 'MZ', 'MOZ','127',1);
+REPLACE INTO uc_countries VALUES (520, 'Nauru', 'NR', 'NRU','128',1);
+REPLACE INTO uc_countries VALUES (524, 'Nepal', 'NP', 'NPL','129',1);
+REPLACE INTO uc_countries VALUES (530, 'Netherlands', 'AN', 'ANT','130',1);
+REPLACE INTO uc_countries VALUES (530, 'Netherlands Antilies', 'AN', 'ANT','131',1);
+REPLACE INTO uc_countries VALUES (554, 'New Caledonia', 'NZ', 'NZL','132',1);
+REPLACE INTO uc_countries VALUES (554, 'New Zealand', 'NZ', 'NZL','133',1);
+REPLACE INTO uc_countries VALUES (558, 'Nicaragua', 'NI', 'NIC','134',1);
+REPLACE INTO uc_countries VALUES (562, 'Niger', 'NE', 'NER','135',1);
+REPLACE INTO uc_countries VALUES (566, 'Nigeria', 'NG', 'NGA','136',1);
+REPLACE INTO uc_countries VALUES (578, 'Norway', 'NO', 'NOR','137',1);
+REPLACE INTO uc_countries VALUES (512, 'Oman', 'OM', 'OMN','138',1);
+REPLACE INTO uc_countries VALUES (586, 'Pakistan', 'PK', 'PAK','139',1);
+REPLACE INTO uc_countries VALUES (591, 'Panama', 'PA', 'PAN','140',1);
+REPLACE INTO uc_countries VALUES (598, 'Papua New Guinea', 'PG', 'PNG','141',1);
+REPLACE INTO uc_countries VALUES (600, 'Paraguay', 'PY', 'PRY','142',1);
+REPLACE INTO uc_countries VALUES (604, 'Peru', 'PE', 'PER','143',1);
+REPLACE INTO uc_countries VALUES (608, 'Philippines', 'PH', 'PHL','144',1);
+REPLACE INTO uc_countries VALUES (612, 'Pitcairn Islands', 'PN', 'PCN','145',1);
+REPLACE INTO uc_countries VALUES (616, 'Poland', 'PL', 'POL','146',1);
+REPLACE INTO uc_countries VALUES (620, 'Portugal', 'PT', 'PRT','147',1);
+REPLACE INTO uc_countries VALUES (634, 'Qatar', 'QA', 'QAT','148',1);
+REPLACE INTO uc_countries VALUES (642, 'Romania', 'RO', 'ROU','150',1);
+REPLACE INTO uc_countries VALUES (646, 'Rwanda', 'RW', 'RWA','152',1);
+REPLACE INTO uc_countries VALUES (670, 'Saint Helena', 'VC', 'VCT','154',1);
+REPLACE INTO uc_countries VALUES (670, 'Saint Lucia', 'VC', 'VCT','155',1);
+REPLACE INTO uc_countries VALUES (670, 'Saint Pierre & Miquelon', 'VC', 'VCT','156',1);
+REPLACE INTO uc_countries VALUES (674, 'San Marino', 'SM', 'SMR','158',1);
+REPLACE INTO uc_countries VALUES (678, 'Sao Tome & Principe', 'ST', 'STP','159',1);
+REPLACE INTO uc_countries VALUES (682, 'Saudi Arabia', 'SA', 'SAU','160',1);
+REPLACE INTO uc_countries VALUES (686, 'Senegal', 'SN', 'SEN','161',1);
+REPLACE INTO uc_countries VALUES (690, 'Seychelles', 'SC', 'SYC','162',1);
+REPLACE INTO uc_countries VALUES (694, 'Sierra Leone', 'SL', 'SLE','163',1);
+REPLACE INTO uc_countries VALUES (702, 'Singapore', 'SG', 'SGP','164',1);
+REPLACE INTO uc_countries VALUES (90, 'Solomon Islands', 'SB', 'SLB','165',1);
+REPLACE INTO uc_countries VALUES (706, 'Somalia', 'SO', 'SOM','166',1);
+REPLACE INTO uc_countries VALUES (239, 'South Africa', 'GS', 'SGS','167',1);
+REPLACE INTO uc_countries VALUES (724, 'Spain', 'ES', 'ESP','168',1);
+REPLACE INTO uc_countries VALUES (144, 'Sri Lanka', 'LK', 'LKA','169',1);
+REPLACE INTO uc_countries VALUES (736, 'Sudan', 'SD', 'SDN','170',1);
+REPLACE INTO uc_countries VALUES (740, 'Suriname', 'SR', 'SUR','171',1);
+REPLACE INTO uc_countries VALUES (748, 'Swaziland', 'SZ', 'SWZ','172',1);
+REPLACE INTO uc_countries VALUES (752, 'Sweden', 'SE', 'SWE','173',1);
+REPLACE INTO uc_countries VALUES (756, 'Switzerland', 'CH', 'CHE','174',1);
+REPLACE INTO uc_countries VALUES (158, 'Taiwan', 'TW', 'TWN','176',1);
+REPLACE INTO uc_countries VALUES (834, 'Tanzania', 'TZ', 'TZA','177',1);
+REPLACE INTO uc_countries VALUES (764, 'Thailand', 'TH', 'THA','178',1);
+REPLACE INTO uc_countries VALUES (768, 'Togo', 'TG', 'TGO','179',1);
+REPLACE INTO uc_countries VALUES (776, 'Tonga', 'TO', 'TON','180',1);
+REPLACE INTO uc_countries VALUES (780, 'Trinidad and Tobago', 'TT', 'TTO','181',1);
+REPLACE INTO uc_countries VALUES (788, 'Tunisia', 'TN', 'TUN','183',1);
+REPLACE INTO uc_countries VALUES (792, 'Turkey', 'TR', 'TUR','184',1);
+REPLACE INTO uc_countries VALUES (796, 'Turks & Caicos Islands', 'TC', 'TCA','185',1);
+REPLACE INTO uc_countries VALUES (798, 'Tuvalu', 'TV', 'TUV','186',1);
+REPLACE INTO uc_countries VALUES (876, 'Wallis & Futuna Islands', 'WF', 'WLF','187',1);
+REPLACE INTO uc_countries VALUES (732, 'Western Samoa', 'EH', 'ESH','188',1);
+REPLACE INTO uc_countries VALUES (800, 'Uganda', 'UG', 'UGA','190',1);
+REPLACE INTO uc_countries VALUES (581, 'United Arab Emirates', 'UM', 'UMI','191',1);
+REPLACE INTO uc_countries VALUES (858, 'Uruguay', 'UY', 'URY','192',1);
+REPLACE INTO uc_countries VALUES (548, 'Vanuatu', 'VU', 'VUT','193',1);
+REPLACE INTO uc_countries VALUES (336, 'Vatican City', 'VA', 'VAT','194',1);
+REPLACE INTO uc_countries VALUES (862, 'Venezuela', 'VE', 'VEN','195',1);
+REPLACE INTO uc_countries VALUES (887, 'Yemen', 'YE', 'YEM','197',1);
+REPLACE INTO uc_countries VALUES ( , 'Yugoslavia', ' ', ' ','198',1);
+REPLACE INTO uc_countries VALUES (894, 'Zambia', 'ZM', 'ZMB','200',1);
+REPLACE INTO uc_countries VALUES (716, 'Zimbabwe', 'ZW', 'ZWE','201',1);
+REPLACE INTO uc_countries VALUES (239, 'South Korea', 'GS', 'SGS','202',1);
+REPLACE INTO uc_countries VALUES (051, 'Armenia', 'AM', 'ARM','225',1);
+REPLACE INTO uc_countries VALUES (031, 'Azerbaijan', 'AZ', 'AZE','226',1);
+REPLACE INTO uc_countries VALUES (398, 'Kazakhstan', 'KZ', 'KAZ','230',1);
+REPLACE INTO uc_countries VALUES (795, 'Turkmenistan', 'TM', 'TKM','236',1);
+REPLACE INTO uc_countries VALUES (804, 'Ukraine', 'UA', 'UKR','237',1);
+REPLACE INTO uc_countries VALUES (860, 'Uzbekistan', 'UZ', 'UZB','238',1);
+REPLACE INTO uc_countries VALUES (070, 'Bosnia (Hercgovina)', 'BA', 'BIH','239',1);
+REPLACE INTO uc_countries VALUES (191, 'Croatia', 'HR', 'HRV','240',1);
+REPLACE INTO uc_countries VALUES (688, 'Serbia (Montenegro)', 'RS', 'SRB','241',1);
+REPLACE INTO uc_countries VALUES (807, 'Macedonia', 'MK', 'MKD','242',1);
+REPLACE INTO uc_countries VALUES (705, 'Slovenia', 'SI', 'SVN','243',1);
+REPLACE INTO uc_countries VALUES (703, 'Slovakia', 'SK', 'SVK','244',1);
+REPLACE INTO uc_countries VALUES (203, 'Czech Republic', 'CZ', 'CZE','245',1);
+REPLACE INTO uc_countries VALUES (016, 'American Samoa', 'AS', 'ASM','248',1);
+REPLACE INTO uc_countries VALUES (010, 'Antarctica', 'AQ', 'ATA','249',1);
+REPLACE INTO uc_countries VALUES (074, 'Bouvet Island', 'BV', 'BVT','250',1);
+REPLACE INTO uc_countries VALUES (086, 'British Indian Ocean Terri', 'IO', 'IOT','251',1);
+REPLACE INTO uc_countries VALUES (116, 'Cambodia', 'KH', 'KHM','252',1);
+REPLACE INTO uc_countries VALUES (162, 'Christmas Island', 'CX', 'CXR','253',1);
+REPLACE INTO uc_countries VALUES (166, 'Cocos (keeling) Islands', 'CC', 'CCK','254',1);
+REPLACE INTO uc_countries VALUES (184, 'Cook Islands', 'CK', 'COK','256',1);
+REPLACE INTO uc_countries VALUES (232, 'Eritrea', 'ER', 'ERI','257',1);
+REPLACE INTO uc_countries VALUES (250, 'France', 'FR', 'FRA','258',1);
+REPLACE INTO uc_countries VALUES (260, 'French Southern Territorie', 'TF', 'ATF','259',1);
+REPLACE INTO uc_countries VALUES (316, 'Guam', 'GU', 'GUM','260',1);
+REPLACE INTO uc_countries VALUES (334, 'Heard And Mc Donald Island', 'HM', 'HMD','261',1);
+REPLACE INTO uc_countries VALUES (584, 'Marshall Islands', 'MH', 'MHL','262',1);
+REPLACE INTO uc_countries VALUES (175, 'Mayotte', 'YT', 'MYT','263',1);
+REPLACE INTO uc_countries VALUES (498, 'Moldova', 'MD', 'MDA','265',1);
+REPLACE INTO uc_countries VALUES (104, 'Myanmar', 'MM', 'MMR','266',1);
+REPLACE INTO uc_countries VALUES (516, 'Namibia', 'NA', 'NAM','267',1);
+REPLACE INTO uc_countries VALUES (570, 'Niue', 'NU', 'NIU','268',1);
+REPLACE INTO uc_countries VALUES (585, 'Palau', 'PW', 'PLW','271',1);
+REPLACE INTO uc_countries VALUES (630, 'Puerto Rico', 'PR', 'PRI','272',1);
+REPLACE INTO uc_countries VALUES (762, 'Tajikistan', 'TJ', 'TJK','275',1);
+REPLACE INTO uc_countries VALUES (772, 'Tokelau', 'TK', 'TKL','276',1);
+REPLACE INTO uc_countries VALUES (850, 'Virgin Islands (U.S.)', 'VI', 'VIR','278',1);
+REPLACE INTO uc_countries VALUES (732, 'Western Sahara', 'EH', 'ESH','279',1);
+REPLACE INTO uc_countries VALUES (086, 'British Forces Post Office', 'IO', 'IOT','280',1);
+REPLACE INTO uc_countries VALUES (410, 'Korea', 'KR', 'KOR','301',1);
+REPLACE INTO uc_countries VALUES (418, 'Lao People's Democratic Re', 'LA', 'LAO','302',1);
+REPLACE INTO uc_countries VALUES (807, 'Macedonia', 'MK', 'MKD','303',1);
+REPLACE INTO uc_countries VALUES (583, 'Micronesia', 'FM', 'FSM','304',1);
+REPLACE INTO uc_countries VALUES (574, 'Norfolk Island', 'NF', 'NFK','305',1);
+REPLACE INTO uc_countries VALUES (580, 'Northern Mariana Islands', 'MP', 'MNP','306',1);
+REPLACE INTO uc_countries VALUES (275, 'Palestinian Territory', 'PS', 'PSE','307',1);
+REPLACE INTO uc_countries VALUES (670, 'Saint Vincent And The Gren', 'VC', 'VCT','308',1);
+REPLACE INTO uc_countries VALUES (703, 'Slovakia (slovak Republic)', 'SK', 'SVK','309',1);
+REPLACE INTO uc_countries VALUES (239, 'South Georgia And The Sout', 'GS', 'SGS','310',1);
+REPLACE INTO uc_countries VALUES (744, 'Svalbard And Jan Mayen Isl', 'SJ', 'SJM','311',1);
+REPLACE INTO uc_countries VALUES (158, 'Taiwan', 'TW', 'TWN','312',1);
+REPLACE INTO uc_countries VALUES (581, 'United States Minor Outlyi', 'UM', 'UMI','313',1);
+REPLACE INTO uc_countries VALUES (580, 'Northern Ireland', 'MP', 'MNP','999',1);

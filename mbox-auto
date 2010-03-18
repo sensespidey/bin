@@ -1,0 +1,99 @@
+#!/bin/sh
+#
+#####################################################################
+#
+# mailbox-auto
+# copyright (c) 2004 Systems Aligned Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# contact the author directly for more information at:
+# bzammit at systemsaligned dot com
+# Systems Aligned Inc.
+# http://www.systemsaligned.com
+#
+#####################################################################
+#
+# history
+#
+# updated: july 08 2004
+# version 0.2
+# - first public release
+# - added more comments to the code
+# - added GPL licence text
+# - fixed some spelling errors in echo text
+#
+# updated: june 23 2004
+# version 0.1
+# - internal release
+# - Credit goes to Charles Cazabon from the qmail@list.cr.yp.to
+#   mailing list for getting the script started.
+#
+# start script
+#
+START=~/
+# Check if the mail folder exists, OR create the folder.
+[ -d "$START"mail ] || mkdir "$START"mail
+
+echo "This is the start: $START"
+
+#
+# Find all the Maildir's in the directory by looking for cur,new,tmp sub direcories
+#
+find $START -type d | while read d ; do
+    [ -d "$d/cur" -a -d "$d/new" -a -d "$d/tmp" ] || continue
+    echo Processing "$d"
+    if [ "$d" = "$START"Maildir ]; then
+#
+# Enter this section if the files found are for the Inbox
+#
+      echo "$d is the first directory, your Inbox"
+#
+# Call the maildir2mbox conversion program with some environment variables set
+#
+      echo MAILDIR="$d" MAIL="$START""$USER" MAILTMP="$START"mbox.tmp maildir2mbox
+      env MAILDIR="$d" MAIL="$START""$USER" MAILTMP="$START"mbox.tmp maildir2mbox
+      chmod 660 "$START""$USER"
+#      chown $USER:mail "$START""$USER"
+#      echo " "
+#      echo "Change to the root user and change the ownership on the mailbox:"
+#      echo "# chown $USER:mail /var/spool/$USER"
+#      echo " "
+    else
+#
+# Enter this section if the files found are for subdirectories other than Inbox
+#
+# this should be smarter, so we can save a deeper-than-1 tree hierarchy for mail
+# perhaps by comparing the $START dir with the name of the non-inbox level Maildir ($d)
+# we can determine an appropriate section of it's name to keep in the newly-made mbox 
+# this is a good start, but i've got subdirs like mail/archive/anarres/Maildir/tranzform/inbox/{new|cur|tmp}
+# from which i want to take everything following the Maildir part, producing ~/mail/tranzform/inbox
+      echo "Directory is: $d"
+      #USERDIR=`basename "$d" | sed 's/\.//'`
+      #echo "Directory without period is: $USERDIR"
+
+      SUBDIR=`echo $d | sed 's!.*Maildir/!!'`
+      echo "Subdirectory is: $SUBDIR"
+
+      echo Saved mail file is: "$START"mail/"$SUBDIR"
+#
+# Call maildir2mbox conversion program with some environment variables set
+#
+      echo MAILDIR="$d" MAIL="$START"mail/"$SUBDIR" MAILTMP="$START"mbox.tmp maildir2mbox
+      env MAILDIR="$d" MAIL="$START"mail/"$SUBDIR" MAILTMP="$START"mbox.tmp maildir2mbox
+    fi
+  done
+
+exit 0
+#
+# end script
+#
+

@@ -1,0 +1,152 @@
+#!/usr/bin/perl
+
+# this is to replace mbox-auto and maildir2mbox scripts with an equivalent in perl
+
+use strict;
+use File::Find;
+use File::Basename;
+use Mail::Box::Manager;
+
+## Utility subs ##
+
+sub usage($)
+{   my $rc = shift;
+
+    warn <<USAGE;
+Usage: $0 [options]
+    options:
+       -src folder           folder(-directory) to be translated into mbox
+       -dst directory        output location of translated
+       -help  -?             show this help
+       -norecurse            descend into sub-folders
+       -cleanup              clean the destination directory before producing
+       -verbose              verbose messages
+USAGE
+
+    exit $rc;
+}     
+
+my %option = (
+#  ( src         => exists $ENV{MAILDIR} ? $ENV{MAILDIR}
+#                 : exists $ENV{maildir} ? $ENV{maildir}
+#                 : exists $ENV{HOME} && -d '$ENV{HOME}/Maildir' ? '$ENV{HOME}/Maildir'
+#                 : exists $ENV{home} && -d '$ENV{home}/Maildir' ? '$ENV{home}/Maildir'
+#                 : '.'
+#  , dst		=> exists $ENV{HOME} && -d '$ENV{HOME}/mail' ? '$ENV{HOME}/mail'
+#		 : exists $ENV{home} && -d '$ENV{home}/mail' ? '$ENV{home}/mail'
+#		 : exists $ENV{mail} ? $ENV{mail}
+# 		 : exists $ENV{MAIL} ? $ENV{MAIL}
+#		 : '.'
+    run		=> 0
+  , help        => 0
+  , verbose     => 1
+  );
+                                                                                                                       
+sub get_options()
+{   use Getopt::Long;
+
+    GetOptions(\%option
+, 'src=s'
+, 'dst=s'
+, 'run!'
+, 'verbose!'
+, 'cleanup!'
+, 'help|?!'
+              );
+
+}
+
+sub trace(@) { warn @_,"\n" if $option{verbose} }
+
+## END Utility subs ##
+                                                                                                                       
+## conversion subs ##
+sub convert2mbox {
+  my ($mgr, $infile, $outfile) = @_;
+
+  trace "\topening src: $infile";
+  my $inbox  = $mgr->open
+    ( $infile
+    , access    => 'r'      # to update deleted
+    , extract   => 'ALWAYS'  # read all bodies immediately: faster
+    );
+  die "Cannot open $infile to read: $!\n" unless defined $inbox;
+
+  trace "\topening dst: $outfile";
+  my $outbox = $mgr->open
+    ( $outfile
+    , access   => 'a'        # append,
+    , create   => 1          # create if not existent
+    );
+  die "Cannot open $outfile to write: $!\n" unless defined $outbox;
+
+  my @msgs = $inbox->messages;
+  my $num = @msgs;
+  trace "\tconverting $infile -> $outfile ($num msgs)";
+  $mgr->copyMessage($outbox, @msgs);
+  
+#  foreach ($inbox->messages) {
+#    trace "converting message: ". $_->get('Subject') ."\n";
+#    $mgr->copyMessage($outbox, $_); 
+#  }
+
+}
+
+# MAIN ROUTINE
+
+usage 22 unless get_options;
+usage 0 if $option{help};
+
+if (!defined($option{src}) || !defined($option{dst})) {
+  trace "src AND dst must be defined.";
+  usage 1;
+} else {
+  trace "src: $option{src}";
+  trace "dst: $option{dst}";
+}
+
+if (!$option{run}) { $option{verbose} = 1; trace "NB: dry-run flag set.  assuming -v and no files will be changed"; }
+
+# first create the mailbox manager:
+my $mgr = Mail::Box::Manager->new;
+                                                                                                                       
+# steps from here:
+# 0. find all Maildir/ subdirs under $option{src}
+my @maildirs;
+find sub { -d && push(@maildirs,$File::Find::name), "\n" }, $option{src};
+trace "Converting Maildirs to mbox, from $option{src}";
+
+foreach my $maildir (@maildirs) {
+  if ( -d $maildir."/new" && -d $maildir."/cur" && -d $maildir."/tmp" ) {
+    trace "selecting Maildir(".$maildir.")";
+
+# 1. construct the name of the corresponding mbox file (dir + filename)
+    my $dir = dirname($maildir);
+    my $filename = basename($maildir);   
+    my $mboxfile = $maildir;
+
+    if ($maildir eq $option{src}) {
+      $mboxfile = $option{dst} . "/inbox";
+    } else {
+      $mboxfile =~ s!$option{src}!!;
+      $mboxfile =    $option{dst}.$mboxfile; 
+    }
+    trace "converting to mbox(".$mboxfile.")";
+
+    if ($option{run}) {  # the RUN flag is set
+# 2. mkdir -p <dir>
+      my $mboxdir = dirname($mboxfile);
+      trace "mkdir -p $mboxdir";
+
+      my $status = `mkdir -p $mboxdir`;
+      die "mkdir -p $mboxdir exited funny: $status" unless $status == 0;
+
+# 3. call convert2mbox()
+      trace "converting to: mbox(".$mboxfile.")";
+      &convert2mbox($mgr,$maildir,$mboxfile);
+    } 
+  }
+}
+
+$mgr->closeAllFolders;
+
