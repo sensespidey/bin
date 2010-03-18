@@ -1,0 +1,114 @@
+#!/usr/bin/perl -w
+use strict;
+use LWP::Simple;
+use HTML::TableExtract;
+use Net::AIM;
+
+my $aim_un = 'your AIM name';
+my $aim_pw = 'your AIM password';
+
+# the base URL of the site we are scraping and
+# the URL of the page where the bugtraq list is located.
+my $base_url = "http://www.security-focus.com";
+my $url      = "http://www.security-focus.com/archive/1";
+
+# get our data.
+my $html_file = get($url) or die "$!\n";
+
+# create an iso date.
+my ($day, $month, $year) = (localtime)[3..5];
+$year += 1900; my $date = "$year-$month-$day";
+
+# since the data we are interested in is contained in a table,
+# and the table has headers, then we can specify the headers and
+# use TableExtract to grab all the data below the headers in one
+# fell swoop. We want to keep the HTML code intact so that we
+# can use the links in our output formats. start the parse:
+my $table_extract =
+   HTML::TableExtract->new(
+     headers   => [qw(Date Subject Author)],
+     keep_html => 1 );
+$table_extract->parse($html_file);
+
+# parse out the desired info and
+# stuff into a data structure.
+my @parsed_rows; my $ctr = 0;
+foreach my $table ($table_extract->table_states) {
+   foreach my $cols ($table->rows) {
+      @$cols[0] =~ m|(\d+/\d+/\d+)|;
+      my %parsed_cols = ( "date" => $1 );
+
+      # since the subject links are in the 2nd column, parse unwanted 
+      # HTML and grab the anchor tags. Also, the subject links are relative, 
+      # so we have to expand them. I could have used URI::URL, 
+      # HTML::Element, HTML::Parse, etc. to do most of this as well.
+      @$cols[1] =~ s/ class="[\w\s]*"//;
+      @$cols[1] =~ m|(<a href="(.*)">(.*)</a>)|;
+      $parsed_cols{"subject_html"} = "<a href=\"$base_url$2\">$3</a>";
+      $parsed_cols{"subject_url"}  = "$base_url$2";
+      $parsed_cols{"subject"}      = $3;
+
+      # the author links are in the 3rd
+      # col, so do the same thing.
+      @$cols[2] =~ s/ class="[\w\s]*"//;
+      @$cols[2] =~ m|(<a href="mailto:(.*@.*)">(.*)</a>)|;
+      $parsed_cols{"author_html"}  = $1;
+      $parsed_cols{"author_email"} = $2;
+      $parsed_cols{"author"}       = $3;
+
+      # put all the information into an
+      # array of hashes for easy access.
+      $parsed_rows[$ctr++] = \%parsed_cols;
+   }
+}
+
+# create an AIM connection.
+my $aim = Net::AIM->new;
+$aim->newconn(Screenname=>$aim_un,Password=>$aim_pw)
+                or die "Cannot connect to AIM.";
+my $conn = $aim->getconn(  );
+
+# set up a handler for messages.
+$conn->set_handler('im_in', \&on_im);
+$conn->set_handler('error', \&on_error);
+print "Logged on to AIM!\n\n";
+$aim->start;
+
+# incoming.
+sub on_im {
+
+    my ($aim, $evt, $from, $to) = @_;
+    my $args = $evt->args(  );
+    ($from, my $friend, my $msg) = @$args;
+
+    # cheaply remove HTML.
+    $msg =~ s/<(.|\n)+?>//g;
+
+    # if the user sends us a "bugtraq"
+    # message, then send back our data.
+    if( $msg =~ /bugtraq/ ) {
+
+         # send each item one at a time.
+         foreach my $cols (@parsed_rows)  {
+
+             # format our scraped data.
+             my $line = "$cols->{date} $cols->{subject} ".
+                           "$cols->{subject_url}";
+
+             # so as not to exceed the speed limit...
+             sleep(2); $aim->send_im($from, $line);
+         }
+    } # give a warning if we don't know what they're saying.
+    else { $aim->send_im($from, "I  only understand 'bugtraq'!"); }
+}
+
+# oops!
+sub on_error {
+    my ($self, $evt) = @_;
+    my ($error, @stuff) = @{$evt->args(  )};
+
+    # Translate error number into English.
+    # then filter and print to STDERR.
+    my $errstr = $evt->trans($error);
+    $errstr =~ s/\$(\d+)/$stuff[$1]/ge;
+    print "ERROR: $errstr\n";

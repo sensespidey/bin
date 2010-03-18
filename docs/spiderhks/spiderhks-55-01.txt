@@ -1,0 +1,69 @@
+#!/usr/bin/perl -w
+# get_earnings_report.pl
+#
+# Logs into Amazon, downloads earning report,
+# and writes an HTML version for your site.
+# Usage: perl get_earnings_report.pl
+use strict;
+use URI::Escape;
+use HTTP::Cookies;
+use LWP::UserAgent;
+
+# Set your Associates account info.
+my $email = 'insert email address';
+my $pass = 'insert password';
+my $aftag = 'insert associates tag';
+
+# Create a user agent object
+# and fake the agent string.
+my $ua = LWP::UserAgent->new;
+$ua->agent("(compatible; MSIE 4.01; MSN 2.5; AOL 4.0; Windows 98)");
+$ua->cookie_jar({}); # in-memory cookie jar.
+
+# Request earning reports, logging in as one pass.
+my $rpturl  = "http://associates.amazon.com/exec/panama/login/".
+              "attempt/customer/associates/no-customer-id/25/".
+              "associates/resources/reporting/earnings/";
+my $rptreq  = HTTP::Request->new(POST => $rpturl);
+my $rptdata = "report-type=shipments-by-item".   # get individual items
+              "&date-selection=qtd".             # all earnings this quarter
+              "&login_id=".uri_escape($email).   # our email address.
+              "&login_password=".uri_escape($pass).  # and password.
+              "&submit.download=Download my report". # get downloadble.
+              "&enable-login-post=true"; # log in and post at once.
+$rptreq->content_type('application/x-www-form-urlencoded');
+$rptreq->content($rptdata); my $report = $ua->request($rptreq);
+ 
+# Uncomment the following line to see
+# the report if you need to debug.
+# print $report->content;
+
+# Set the report to array.
+my @lines = split(/\n/, $report->content);
+ 
+# Get the time period.
+my @fromdate = split(/\t/, $lines[1]);
+my @todate = split(/\t/, $lines[2]);
+my $from = $fromdate[1];
+my $to = $todate[1];
+ 
+# Print header...
+print "<html><body>";
+print "<h2>Items Purchased Through This Site</h2>";
+print "from $from to $to <br><br>\n";
+print "<ul>";
+ 
+# Loop through the rest of the report.
+splice(@lines,0,5);
+foreach my $line (@lines) {
+    my @fields  = split(/\t/, $line);
+    my $title   = $fields[1];
+    my $asin    = $fields[2];
+    my $edition = $fields[4];
+    my $items   = $fields[8];
+
+    # Format items as HTML for display.
+    print "<li><a href=\"http://www.amazon.com/o/ASIN/$asin/ref=nosim/".
+          "$aftag\">$title</a> ($items) $edition <br>\n";
+}
+print "</ul></body></html>";

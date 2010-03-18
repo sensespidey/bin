@@ -1,0 +1,3 @@
+my ($domain,$rfc931,$authuser,$TimeDate,$Request,$Status,$Bytes,$Referrer,$Agen
+t) = $line =~ /^(\S+) (\S+) (\S+) \[([^\]\[]+)\] \"([^"]*)\" (\S+) (\S+) \"?([^"]*)\
+"? \"([^"]*)\"/o;

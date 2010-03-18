@@ -1,0 +1,85 @@
+#!/usr/bin/perl -w 
+#
+# LeechGrounds - saves flash files from Newgrounds.com.
+# Part of the Leecharoo suite - for all those hard to leech places.
+# http://disobey.com/d/code/ or contact morbus@disobey.com.
+#
+# This code is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+
+use strict; $|++;
+my $VERSION = "1.0";
+use File::Spec::Functions;
+
+# make sure we have the modules we need, else die peacefully.
+eval("use LWP 5.6.9;"); die "[err] LWP 5.6.9 or greater required.\n" if $@;
+
+# our download URLs are found in this URL (which'll
+# be tweaked with the date and ID we care about).
+my $base_url = "http://newgrounds.com/portal/content.php";
+my $dir = "newgrounds";  # save downloads to...?
+mkdir $dir;              # make sure that dir exists.
+my $date;                # date from newgrounds server.
+
+# create a final hash that contains
+# all the IDs we'll be downloading.
+my %ids; foreach (@ARGV) {
+    next unless /\d/; # numbers only.
+
+    # if it's a range, work through it.
+    if (/(\d+)-(\d+)/) {
+        my $start = $1; my $end = $2;
+        for (my $i = $start; $i <= $end; $i++) {
+            $ids{$i} = undef; # alive, alive!
+        }
+    } else { $ids{$_} = undef; } # normal number.
+}
+
+# create a downloader, faking the User-Agent to get past filters.
+my $ua = LWP::UserAgent->new(agent => 'Mozilla/4.76 [en] (Win98; U)');
+
+# now that we have a list of IDs we want to 
+# download, get the date value from first page.
+# we'll use this to get the final download URLs.
+print "-" x 76, "\n"; # pretty visual seperator.
+foreach my $id (sort {$a <=> $b} keys %ids) {
+
+    # get the date first time through.
+    unless ($date) {
+       print "Trying to grab a date string from $id... ";
+       my $response = $ua->get("http://newgrounds.com/portal/view.php?id=$id");
+       my $data = $response->content; $data =~ /&date=(\d+)&quality=b/;
+       unless ($1) { print "bah!\n"; next; } print "yes!\n";
+       $date = $1; # store the date for later use.
+    }
+
+    # now, we can get the download URL to our Flash file.
+    # note that we get ALL the download URLs before we
+    # actually download. this saves us from having to 
+    # error check when we're out-of-date on long downloads.
+    print "Determining download URL for $id... ";
+    my $response = $ua->get("$base_url?id=$id&date=$date");
+    my $data = $response->content; # our content.
+    $data =~ /uploads.newgrounds.com\/(.*swf)/;
+    $ids{$id} = "http://uploads.newgrounds.com/$1";
+    print "done!\n";
+
+} print "-" x 76, "\n"; # pretty!
+
+# if we're here, we have our URLs to download in
+# our hash, so we just run through the basics now.
+foreach my $id (sort {$a <=> $b} keys %ids) {
+
+   # only work on IDs with URLs.
+   next unless defined ($ids{$id});
+
+   # get URL/filename.
+   my $url = $ids{$id}; $url =~ /([^\/]*.swf)/;
+   my $filename = $1; print "Downloading $filename... ";
+
+   # and use :content_file to autosave to our directory.
+   $ua->get($url, ':content_file' => "$dir/$filename");
+   print "done!\n"; # easier said than don... oh, nevermind.
+
+}

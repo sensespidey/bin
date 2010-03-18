@@ -1,0 +1,123 @@
+#!/usr/bin/perl -w
+use strict;
+
+use WWW::Mechanize;
+use HTML::TokeParser;
+
+# the address you registered
+# with Radio Times site here. 
+my $email = 'your email address';
+die "Must provide an email address" unless $email ne '';
+
+# We create a WWW::Mechanize object and tell it the address of the site
+# we'll be working from. The Radio Times' front page has an image link
+# with an ALT text of "My Diary", so we can use that to get to the right
+# section of the site:
+
+my $agent = WWW::Mechanize->new(  );
+$agent->get("http://www.radiotimes.beeb.com/");
+$agent->follow("My Diary");
+
+# The returned page contains two forms - one to allow you to choose from a
+# list box of program types, and then a login form for the diary
+# function. We tell WWW::Mechanize to use the second form for input.
+# (Something to remember here is that WWW::Mechanize's list of forms,
+# unlike an array in Perl, is indexed starting at 1 rather than 0. 
+# Therefore, our index is '2'.)
+
+$agent->form(2);
+
+# Now we can fill in our email address for the '<INPUT name="email"
+# type="text">' field and click the submit button. Nothing too
+# complicated here.
+
+$agent->field("email", $email);
+$agent->click(  );
+
+# WWW::Mechanize moves us on to our Diary page. This is the page 
+# we need to process to find the date details. On looking at the 
+# HTML source for this page, we can see the HTML we need to work 
+# through is something like:
+#
+#  <input>
+#  <tr><td></td></tr>
+#  <tr><td></td><td></td><td class="bluetext">Date of episode</td></tr>
+#  <td></td><td></td>
+#  <td class="bluetext"><b>Time of episode</b></td></tr>
+#  <a href="page_with_episode_info"></a>
+#
+# This can be modelled with HTML::TokeParser as below. The important
+# methods to note are get_tag, which will move the stream on to the
+# next start of the tag given, and get_trimmed_text, which will take
+# the text between the current tag and a given tag. For example, for the
+# HTML code "<b>Bold text here</b>", my $tag = get_trimmed_text("/b")
+# would return "Bold text here" to $tag.
+
+# Also note that we're initializing HTML::TokeParser on
+# '\$agent->{content}' - this is an internal variable for WWW::Mechanize,
+# exposing the HTML content of the current page.
+
+my $stream = HTML::TokeParser->new(\$agent->{content});
+my $date; # will hold the current show's datestamp.
+
+# <input>
+$stream->get_tag("input");
+
+# <tr><td></td></tr><tr>
+$stream->get_tag("tr"); $stream->get_tag("tr");
+
+# <td></td><td></td>
+$stream->get_tag("td"); $stream->get_tag("td");
+
+# <td class="bluetext">Date of episode</td></tr>
+my $tag = $stream->get_tag("td");
+if ($tag->[1]{class} and $tag->[1]{class} eq "bluetext") {
+    $date = $stream->get_trimmed_text("/td");
+    # The date contains '&nbsp;', which we'll translate to a space.
+    $date =~ s/\xa0/ /g;
+}
+
+# <td></td><td></td>
+$stream->get_tag("td"); 
+
+# <td class="bluetext"><b>Time of episode</b>  
+$tag = $stream->get_tag("td");
+if ($tag->[1]{class} eq "bluetext") {
+    $stream->get_tag("b");
+    # This concatenates the time of the showing to the date.
+    $date .= ", from " . $stream->get_trimmed_text("/b");
+}
+
+# </td></tr><a href="page_with_episode_info"></a>
+$tag = $stream->get_tag("a");
+
+# Match the URL to find the page giving episode information.
+$tag->[1]{href} =~ m!src=(http://.*?)'!;
+my $show = $stream->get_trimmed_text("a");
+
+# We have a scalar, $date, containing a string that looks something like
+# "Thursday 23 January, from 6:45pm to 7:30pm.", and we have a URL, in
+# $1, that will tell us more about that episode. We tell WWW::Mechanize
+# to go to the URL:
+
+$agent->get($1);
+
+# The navigation we want to perform on this page is far less complex than
+# on the last page, so we can avoid using a TokeParser for it - a regular
+# expression should suffice. The HTML we want to parse looks something
+# like this:
+#
+#  <br><b>Episode</b><br>  The Episode Title<br>
+#
+# We use a regex delimited with '!' in order to avoid having to escape the
+# slashes present in the HTML, and store any number of alphanumeric
+# characters after some whitespace, all in between <br> tags after the
+# Episode header:
+
+$agent->{content} =~ m!<br><b>Episode</b><br>\s+?(\w+?)<br>!;
+
+# $1 now contains our episode, and all that's
+# left to do is print out what we've found:
+
+my $episode = $1;
+print "The next Buffy episode ($episode) is on $date.\n";

@@ -1,0 +1,130 @@
+#!/usr/bin/perl -w
+
+# Usage: geodist.pl --from="fromaddr" --to="toaddr" [--unit="unit"]
+# See ParseAddress(  ) below for the format of addresses. Default unit is
+# "mile". Other units are yard, foot, inch, kilometer, meter, centimeter.
+
+use strict;
+use Getopt::Long;
+use Geo::Distance;
+use HTTP::Request::Common;
+use LWP::UserAgent;
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+my $_ADDRESS_REGEX = q<(((([^\,]+),\s*)?([^\,]+),\s*)?([A-Z]{2}))?> .
+  q<(\s*(\d{5}(-\d{4})?))?>;
+
+sub ParseAddress {
+
+  # Moderately robust regex parse of an address of the form:
+  #   Street Address, City, ST ZIP
+  # Assumes that a city implies a state, and a street address implies a
+  # city; otherwise, all fields are optional. Does a good job so long as
+  # there are no commas in street address or city fields.
+  
+  my $AddrIn = shift;
+  my $ComponentsOut = shift;
+  $AddrIn =~ /$_ADDRESS_REGEX/;
+  $ComponentsOut->{Address} = $4 if $4;
+  $ComponentsOut->{City} = $5 if $5;
+  $ComponentsOut->{State} = $6 if $6;
+  $ComponentsOut->{Zip} = $8 if $8;
+}
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+sub GetPosition {
+
+  # Hack mappoint.msn.com to obtain the longitude and latitude of an
+  # address. MapPoint doesn't actually return lon/lat as user data, but
+  # it can be found in a Location header when a successful map request is
+  # made. Testing has shown this to be a robust hack. Biggest caveat
+  # presently is failure when MapPoint returns multiple address matches.
+
+  my $AddressIn = shift;
+  my $LatitudeOut = shift;
+  my $LongitudeOut = shift;
+
+  # Create a user agent for HTTP requests.
+  my $ua = LWP::UserAgent->new;
+
+  # First do a simple request to get the redirect that MapPoint sends us.
+  my $req = GET( 'http://mappoint.msn.com/' );
+  my $res = $ua->simple_request( $req );
+
+  # Save the redirect URI and then grab the full page.
+  my $uri = $res->headers->{location};
+  my $req = GET( 'http://mappoint.msn.com' . $uri );
+  my $res = $ua->request( $req );
+
+  # Get the _  _VIEWSTATE hidden input from the result.
+  my ( $_  _VIEWSTATE ) =
+    $res->content =~ /name="_  _VIEWSTATE" value="([^\"]*)"/s;
+
+  # Construct the form fields expected by the mapper.
+  my $req = POST( 'http://mappoint.msn.com' . $uri,
+    [ 'FndControl:SearchType' => 'Address',
+      'FndControl:ARegionSelect' => '12',
+      'FndControl:StreetText' => $AddressIn->{Address},
+      'FndControl:CityText' => $AddressIn->{City},
+      'FndControl:StateText' => $AddressIn->{State},
+      'FndControl:ZipText' => $AddressIn->{Zip},
+      'FndControl:isRegionChange' => '0',
+      'FndControl:resultOffSet' => '0',
+      'FndControl:BkARegion' => '12',
+      'FndControl:BkPRegion' => '15',
+      'FndControl:hiddenSearchType' => '',
+      '__VIEWSTATE' => $_  _VIEWSTATE
+    ] );
+
+  # Works without referer, but we include it for good measure.
+  $req->push_header( 'Referer' => 'http://mappoint.msn.com' . $uri );
+
+  # Do a simple request because all we care about is the redirect URI.
+  my $res = $ua->simple_request( $req );
+
+  # Extract and return the latitude/longitude from the redirect URI.
+  ( $$LatitudeOut, $$LongitudeOut ) = $res->headers->{location} =~
+    /C=(-?[0-9]+\.[0-9]+)...(-?[0-9]+\.[0-9]+)/;
+}
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+sub main {
+
+  # Get the command-line options.
+  my ( $FromOpt, %FromAddress, $ToOpt, %ToAddress );
+  my $UnitOpt = 'mile';
+  GetOptions( "from=s" => \$FromOpt,
+              "to=s"   => \$ToOpt,
+              "unit=s" => \$UnitOpt );
+
+  # Parse the addresses.
+  ParseAddress( $FromOpt, \%FromAddress );
+  ParseAddress( $ToOpt, \%ToAddress );
+
+  # Get latitude/longitude for the addresses.
+  my ( $FromLat, $FromLon, $ToLat, $ToLon );
+  GetPosition( \%FromAddress, \$FromLat, \$FromLon );
+  GetPosition( \%ToAddress, \$ToLat, \$ToLon );
+
+  # If we at least got some numbers, then find the distance.
+  if ( $FromLat && $FromLon && $ToLat && $ToLon ) {
+    print "($FromLat,$FromLon) to ($ToLat,$ToLon) is ";
+    my $geo = new Geo::Distance;
+    print $geo->distance_calc( $UnitOpt, $FromLon,
+                               $FromLat, $ToLon, $ToLat );
+    if ( $UnitOpt eq 'inch' ) { print " inches\n"; }
+    elsif ( $UnitOpt eq 'foot' ) { print " feet\n"; }
+    else { print " ", $UnitOpt, "s\n"; }
+  }
+  else {
+    print "Latitude/Longitude lookup failed for FROM address\n"
+      if !( $FromLat && $FromLon );
+    print "Latitude/Longitude lookup failed for TO address\n"
+      if !( $ToLat && $ToLon );
+  }
+}
+
+main(  );

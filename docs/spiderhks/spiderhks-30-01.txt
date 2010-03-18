@@ -1,0 +1,46 @@
+#!/usr/bin/perl -w
+#
+# translate.pl - translates the output of wsp.pl -v.
+#
+# This code is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+
+use strict;
+my $save_url;
+my $count = 1;
+
+# Print the basics
+print "#!/usr/bin/perl\n";
+print "use warnings;\n";
+print "use strict;\n";
+print "use LWP::UserAgent;\n";
+print "my \$ua = LWP::UserAgent->new;\n\n";
+
+# read through wsp's output.
+while (<>) {
+    chomp; s/\x0D$//;
+
+    # add our HTTP request headers...
+    if (/^INPUT: ([a-zA-Z0-9\-\_]+): (.*)$/) {
+        print '$req'.$count.'->header(\''.$1."' => '".$2."');\n";
+    }
+
+    # what URL we're actually requesting...
+    if (/^Request for URL: (.*)$/) { $save_url=$1; }
+
+    # the HTTP 1.x request line (GET or POST).
+    if (/^FIRST LINE: ([A-Z]+) \S+ (.*)$/) {
+        print "\n\n### request number $count ###\n";
+        print "my \$req$count = HTTP::Request->new($1 => '$save_url');\n"; 
+    }
+
+    # the POST information sent off, if any.
+    if (/^POST body: (.*)$/) { print "\$req$count->content('$1');\n"; }
+
+    # and finish up our request.
+    if (/^ --- Done sending./) {
+        print "print \$ua->request(\$req$count)->as_string;\n";
+        $count++; # move on to our next request. yeedawg.
+    }
+}

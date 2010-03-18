@@ -1,0 +1,118 @@
+#!/usr/bin/python
+"""
+getcams.py - Archiving Your Favorite Web Cams
+Sean B. Palmer, <http://purl.org/net/sbp/>, 2003-07.
+License: GPL 2; share and enjoy!
+
+Usage: 
+   python getcams.py [ <filename> ]
+
+<filename> defaults to URIs.txt
+"""
+
+import urllib2, time
+from urllib import quote
+from email.Utils import parsedate
+
+# # # # # # # # # # # # # # # # #
+# Configurable stuff
+# 
+# download how often, in seconds
+seconds = 15
+
+# what file we should write to
+index = 'webcams.html' 
+
+# End of configurable stuff!
+# # # # # # # # # # # # # # # # #
+
+def quoteURI(uri): 
+   # Turn a URI into a filename.
+   return quote(uri, safe='')
+
+def makeHTML(uris): 
+   # Create an HTML index so that we
+   # can look at the archived piccies.
+   print "Creating a webcam index at", index
+
+   f = open(index, 'w')
+   print >> f, '<html xmlns="http://www.w3.org/1999/xhtml" >'
+   print >> f, '<head><title>My Webcams</title></head>'
+   print >> f, '<body>'
+   for uri in uris: 
+      # We use the URI of the image for the filename, but we have 
+      # to hex encode it first so that our operating systems are 
+      # happy with it. The following code unencodes the URI.
+      link = quoteURI(uri).replace('%', '%25')
+
+      # Now we make the image, and provide a link to the original.
+      print >> f, '<p><img src="%s" alt=" " /><br />' % link
+      print >> f, '-<a href="%s">%s</a></p>' % (uri, uri)
+   print >> f, '</body>'
+   print >> f, '</html>'
+   f.close(  )
+   print "Done creating the index!\n"
+
+metadata = {}
+
+def getURI(uri): 
+   print "Trying", uri
+
+   # Try to open the URI--we're not downloading it yet.
+   try: u = urllib2.urlopen(uri)
+   except Exception, e: print "   ...failed:", e
+   else: 
+      # Get some information about the URI; we do this
+      # to find out whether it's been updated yet.
+      info = u.info(  )
+      meta = (info.get('last-modified'), info.get('content-size'))
+      print "   ...got metadata:", meta
+
+      if metadata.get(uri) == meta: 
+         print "   ...not downloading: no update yet"
+      else: 
+         # The image has been updated, so let's download it.
+         metadata[uri] = meta
+         print "   ...downloading; type: %s; size: %s" % \
+            (info.get('content-type', '?'), info.get('content-size', '?'))
+         data = u.read(  )
+         open(quoteURI(uri), 'wb').write(data)
+         print "   ...done! %s bytes" % len(data)
+
+         # Save an archived version for later.
+         t = parsedate(info.get('last-modified'))
+         archv = quoteURI(uri) + '-' + time.strftime('%Y%m%dT%H%M%S', t) + '.jpg'
+         open(archv, 'wb').write(data)
+      u.close(  )
+
+def doRun(uris): 
+   for uri in uris: 
+      startTime = time.time(  )
+      getURI(uri)
+      finishTime = time.time(  )
+
+      timeTaken = finishTime - startTime
+      print "This URI took", timeTaken, "seconds\n"
+      timeLeft = seconds - timeTaken # time until the next run
+      if timeLeft > 0: time.sleep(timeLeft)
+
+def main(argv): 
+   # We need a list of URIs to download. We require them to be 
+   # in a file; the next line defaults the filename to URIs.txt 
+   # if it can't gather one from the command line.
+   fn = (argv + [None])[0] or 'URIs.txt'
+   data = open(fn).read(  )
+   uris = data.splitlines(  )
+
+   # Now make an index, and then
+   # continuously download the piccies.
+   makeHTML(uris)
+   while 1: doRun(uris)
+
+if __name__=="__main_  _": 
+   import sys
+   # If the user asks for help, give it to them!
+   # Otherwise, just run the program as usual.
+   if sys.argv[1:] in (['--help', '-h', '-?']): 
+      print __doc_  _
+   else: main(sys.argv[1:])

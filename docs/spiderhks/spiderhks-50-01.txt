@@ -1,0 +1,54 @@
+#!/usr/bin/perl -w
+# googletech.cgi
+# Getting Google results
+# without getting weblog results.
+use strict;
+use SOAP::Lite;
+use XML::Simple;
+use CGI qw(:standard);
+use HTML::Entities (  );
+use LWP::Simple qw(!head);
+
+my $technoratikey = "your technorati key here";
+my $googlekey = "your google key here";
+
+# Set up the query term
+# from the CGI input.
+my $query = param("q");
+
+# Initialize the SOAP interface and run the Google search.
+my $google_wdsl = "http://api.google.com/GoogleSearch.wsdl";
+my $service = SOAP::Lite->service->($google_wdsl);
+
+# Start returning the results page -
+# do this now to prevent timeouts
+my $cgi = new CGI;
+
+print $cgi->header(  );
+print $cgi->start_html(-title=>'Blog Free Google Results');
+print $cgi->h1('Blog Free Results for '. "$query");
+print $cgi->start_ul(  );
+
+# Go through each of the results
+foreach my $element (@{$result->{'resultElements'}}) {
+
+    my $url = HTML::Entities::encode($element->{'URL'});
+
+    # Request the Technorati information for each result.
+    my $technorati_result = get("http://api.technorati.com/bloginfo?".
+                                "url=$url&key=$technoratikey");
+
+    # Parse this information.
+    my $parser = new XML::Simple;
+    my $parsed_feed = $parser->XMLin($technorati_result);
+
+    # If Technorati considers this site to be a weblog,
+    # go onto the next result. If not, display it, and then go on.
+    if ($parsed_feed->{document}{result}{weblog}{name}) { next; }
+    else {
+        print $cgi-> i('<a href="'.$url.'">'.$element->{title}.'</a>');
+        print $cgi-> l("$element->{snippet}");
+    }
+}
+print $cgi -> end_ul(  );
+print $cgi->end_html;

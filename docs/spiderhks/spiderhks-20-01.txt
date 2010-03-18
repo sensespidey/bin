@@ -1,0 +1,68 @@
+#!/usr/bin/perl -w
+use strict;
+
+use LWP::Simple;
+use HTML::TokeParser;
+use URI::Escape;
+
+# The artist to search for should be given as an argument.
+my $artist = $ARGV[0]; die "No artist specified" unless $artist ne '';
+
+# We use URI::Escape to convert the artist's name
+# into a form that can be encoded as part of a URL.
+my $search = uri_escape($artist);
+
+# 1.  Download the page to be worked on.
+#####################################
+
+my $content =
+  get('http://www.echocloud.net/index.php?searchword='. 
+  "$search".'&option=asearch&stype=2&order=0&nrows=6');
+
+# Now that we have our content, initialize a
+# new HTML::TokeParser object with it.
+my $stream = new HTML::TokeParser(\$content);
+
+print "Artists liked by $artist listeners include:\n";
+
+# 2.  Determine the structure of the HTML document.
+# An HTML result looks like: <a href='index.php?searchword
+# =Beck&option=asearch' class="cf">&nbsp;Beck</a>
+#####################################
+
+# 3.  Model the structure in code.
+# Given that each <a class="cf"> contains our result, we:
+#   - Search for each <a> tag.
+#   - If it has a 'class' attribute, and
+#     the class attribute is "cf":
+#       - Save all the text from <a> to </a>.
+#   - Repeat.
+#
+# Of the methods used below, the two from TokeParser are:
+# get_tag:  Move the stream to the next occurence of a tag.
+# get_trimmed_text:  Store text from the current location
+# of the stream to the tag given.
+#####################################
+
+# For each <a> tag
+while (my $tag = $stream->get_tag("a")) {
+
+  # Is there a 'class' attribute?  Is it 'cf'?
+  if ($tag->[1]{class} and $tag->[1]{class} eq "cf") {
+
+      # Store everything from <a> to </a>.
+      my $result = $stream->get_trimmed_text("/a");
+
+      # Remove leading.
+      # '&nbsp;' character.
+      $result =~ s/^.//g;
+
+      # Echocloud sometimes returns the artist we searched
+      # for as one of the results.  Skip the current loop
+      # if the string given matches one of the results.
+      next if $result =~ /$artist/i;
+
+      # And we can print our final result.
+      print "  - $result\n";
+  }
+}

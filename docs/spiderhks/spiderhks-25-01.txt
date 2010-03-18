@@ -1,0 +1,47 @@
+#!/usr/bin/perl -w
+use strict;
+use utf8;
+use LWP::Simple;
+use XML::LibXML;
+use URI;
+
+# Set up the parser, and set it to recover
+# from errors so that it can handle broken HTML
+my $parser = XML::LibXML->new(  ); $parser->recover(1);
+
+# Parse the page into a DOM tree structure
+my $url  = 'http://junglescan.com/';
+my $data = get($url) or die $!;
+my $doc  = $parser->parse_html_string($data);
+
+# Extract the table rows (as an
+# array of references to DOM nodes)
+my @winners = $doc->findnodes(q{
+    /html/body/table/tr/td[1]/font/form[2]/table[2]/tr
+});
+
+# The first two rows contain headings,
+# and we want only the top five, so slice.
+@winners = @winners[2..6];
+
+foreach my $product (@winners) {
+    # Get the percentage change and type
+    # We use the find method since we only need strings
+    my $change = $product->find('td[4]');
+    my $type = $product->find('td[3]//img/@alt');
+
+    # Get the title. It has some annoying
+    # whitespace, so we trim that off with regexes.
+    my $title = $product->find('td[3]//tr[1]');
+    $title =~ s/^\s*//; $title =~ s/\xa0$//;
+
+    # Get the first link ("Visit Amazon.com page")
+    # This is relative to the page's URL, so we make it absolute
+    my $relurl = $product->find('td[3]//a[1]/@href');
+    my $absurl = URI->new($relurl)->abs($url);
+
+    # Output. There isn't always a type, so we ignore it if there isn't.
+    print "$change  $title";
+    print " [$type]" if $type;
+    print "\n       Amazon info: $absurl\n\n";
+}

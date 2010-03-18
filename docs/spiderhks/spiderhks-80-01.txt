@@ -1,0 +1,81 @@
+#!/usr/bin/perl -w
+use strict;
+use LWP::Simple;
+use HTML::TableExtract;
+use Net::SMTP;
+use Net::AIM;
+use XML::RSS;
+
+# get params for later use.
+my $RUN_STATE = shift(@ARGV);
+
+# the base URL of the site we are scraping and
+# the URL of the page where the bugtraq list is located.
+my $base_url = "http://www.security-focus.com";
+my $url      = "http://www.security-focus.com/archive/1";
+
+# get our data.
+my $html_file = get($url) or die "$!\n";
+
+# create an iso date.
+my ($day, $month, $year) = (localtime)[3..5];
+$year += 1900; my $date = "$year-$month-$day";
+
+# since the data we are interested in is contained in a table,
+# and the table has headers, then we can specify the headers and
+# use TableExtract to grab all the data below the headers in one
+# fell swoop. We want to keep the HTML code intact so that we
+# can use the links in our output formats. start the parse:
+my $table_extract =
+   HTML::TableExtract->new(
+     headers   => [qw(Date Subject Author)],
+     keep_html => 1 );
+$table_extract->parse($html_file);
+
+# parse out the desired info and
+# stuff into a data structure.
+my @parsed_rows; my $ctr = 0;
+foreach my $table ($table_extract->table_states) {
+   foreach my $cols ($table->rows) {
+      @$cols[0] =~ m|(\d+/\d+/\d+)|;
+      my %parsed_cols = ( "date" => $1 );
+
+      # since the subject links are in the 2nd column, parse unwanted HTML
+      # and grab the anchor tags. Also, the subject links are relative, so
+      # we have to expand them. I could have used URI::URL, HTML::Element,
+      # HTML::Parse, etc. to do most of this as well.
+      @$cols[1] =~ s/ class="[\w\s]*"//;
+      @$cols[1] =~ m|(<a href="(.*)">(.*)</a>)|;
+      $parsed_cols{"subject_html"} = "<a href=\"$base_url$2\">$3</a>";
+      $parsed_cols{"subject_url"}  = "$base_url$2";
+      $parsed_cols{"subject"}      = $3;
+
+      # the author links are in the 3rd
+      # col, so do the same thing.
+      @$cols[2] =~ s/ class="[\w\s]*"//;
+      @$cols[2] =~ m|(<a href="mailto:(.*@.*)">(.*)</a>)|;
+      $parsed_cols{"author_html"}  = $1;
+      $parsed_cols{"author_email"} = $2;
+      $parsed_cols{"author"}       = $3;
+
+      # put all the information into an
+      # array of hashes for easy access.
+      $parsed_rows[$ctr++] = \%parsed_cols;
+   }
+}
+ 
+# if no params were passed, then
+# simply output to stdout.
+unless ($RUN_STATE) { print &format_my_data(  ); }
+
+# formats the actual
+# common data, per format.
+sub format_my_data(  ) {
+   my $data = "";
+
+   foreach my $cols (@parsed_rows)  {
+      unless ($RUN_STATE) { $data .= "$cols->{'date'} $cols->{'subject'}\n"; }
+   }
+
+   return $data;
+}

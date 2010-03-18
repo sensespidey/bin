@@ -1,0 +1,30 @@
+#!/usr/bin/perl -w
+
+# Example freshmeat searching plug-in
+#
+# This file is distributed under the same licence as Perl itself.
+#
+# by rik - ora@rikrose.net
+
+use strict;
+use LWP::UserAgent;
+use HTML::TokeParser;
+
+# create the URL from our incoming query.
+my $url = "http://freshmeat.net/search-xml?q=" . join "+", @ARGV;
+
+# download the data.
+my $ua = LWP::UserAgent->new(  );
+$ua->agent('Mozilla/5.0');
+my $response = $ua->get($url);
+die $response->status_line . "\n"
+  unless $response->is_success;
+
+my $stream = HTML::TokeParser->new (\$response->content) or die "\n";
+while (my $tag = $stream->get_tag("match")){
+    $tag = $stream->get_tag("projectname_full");
+    my $name = $stream->get_trimmed_text("/projectname_full");
+    $tag = $stream->get_tag("url_homepage");
+    my $url = $stream->get_trimmed_text("/url_homepage");
+    print "$url\t$name\n";
+}

@@ -1,0 +1,232 @@
+#!/usr/bin/perl -w
+#
+# yspider.pl
+#
+# Yahoo! Spider - crawls Yahoo! sites, collects links from each 
+# downloaded HTML page, searches each downloaded page, and prints a
+# list of results when done.
+# http://www.artymiak.com/software/ or contact jacek@artymiak.com
+#
+# This code is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+
+use strict;
+use Getopt::Std;            # parse command-line options.
+use LWP::UserAgent;         # download data from the Net.
+use HTML::LinkExtor;        # get links inside an HTML document.
+use URI::URL;               # turn relative links into absolutes.
+
+my $help = <<"EOH";
+----------------------------------------------------------------------------
+Yahoo! Spider.
+
+Options: -s    list of sites you want to crawl,
+               e.g. -s 'us china denmark'
+         -h    print this help
+
+Allowed values of -s are:
+
+   argentina, asia, australia, brazil, canada,
+   catalan, china, denmark, france, germany, hongkong,
+   india, ireland, italy, japan, korea, mexico,
+   newzealand, norway, singapore, spain, sweden, taiwan,
+   uk, us, us_chinese, us_spanish 
+
+Please, use this code responsibly.  Flooding any site
+with excessive queries is bad net citizenship.
+----------------------------------------------------------------------------
+EOH
+
+# define our arguments and
+# show the help if asked.
+my %args; getopts("s:h", \%args); 
+die $help if exists $args{h};
+
+# The list of code names, and
+# URLs for various Yahoo! sites.
+my %ys = (
+   argentina => "http://ar.yahoo.com", asia => "http://asia.yahoo.com",
+   australia => "http://au.yahoo.com", newzealand => "http://au.yahoo.com",
+   brazil    => "http://br.yahoo.com", canada   => "http://ca.yahoo.com",
+   catalan   => "http://ct.yahoo.com", china    => "http://cn.yahoo.com",
+   denmark   => "http://dk.yahoo.com", france   => "http://fr.yahoo.com",
+   germany   => "http://de.yahoo.com", hongkong => "http://hk.yahoo.com",
+   india     => "http://in.yahoo.com", italy    => "http://it.yahoo.com",
+   korea     => "http://kr.yahoo.com", mexico   => "http://mx.yahoo.com",
+   norway    => "http://no.yahoo.com", singapore => "http://sg.yahoo.com",
+   spain     => "http://es.yahoo.com", sweden   => "http://se.yahoo.com",
+   taiwan    => "http://tw.yahoo.com", uk       => "http://uk.yahoo.com",
+   ireland  => "http://uk.yahoo.com",  us       => "http://www.yahoo.com",
+   japan    => "http://www.yahoo.co.jp",
+   us_chinese => "http://chinese.yahoo.com",
+   us_spanish => "http://espanol.yahoo.com"
+);
+
+# if the -s option was used, check to make
+# sure it matches one of our existing codes
+# above. if not, or if no -s was passed, help.
+my @sites; # which locales to spider.
+if (exists $args{'s'}) {
+    @sites = split(/ /, lc($args{'s'}));
+    foreach my $site (@sites) {
+        die "UNKNOWN: $site\n\n$help" unless $ys{$site};
+    }
+} else { die $help; }
+
+# Defines global and local profiles for URLs extracted from the
+# downloaded pages. These profiles are used to determine if the
+# URLs extracted from each new document should be placed on the
+# TODO list (%todo) or rejected (%rejects). Profiles are lists
+# made of chunks of text, which are matched against found URLs.
+# Any special characters, like slash (/) or dot (.), must be properly
+# escaped. Remember that globals have precedence over locals. 
+my %rules = (
+   global     => { allow => [], deny => [ 'search', '\*' ] },
+   argentina  => { allow => [ 'http:\/\/ar\.' ], deny => [] },
+   asia       => { allow => [ 'http:\/\/(aa|asia)\.' ], deny => [] },
+   australia  => { allow => [ 'http:\/\/au\.' ], deny => [] },
+   brazil     => { allow => [ 'http:\/\/br\.' ], deny => [] },
+   canada     => { allow => [ 'http:\/\/ca\.' ], deny => [] },
+   catalan    => { allow => [ 'http:\/\/ct\.' ], deny => [] },
+   china      => { allow => [ 'http:\/\/cn\.' ], deny => [] },
+   denmark    => { allow => [ 'http:\/\/dk\.' ], deny => [] },
+   france     => { allow => [ 'http:\/\/fr\.' ], deny => [] },
+   germany    => { allow => [ 'http:\/\/de\.' ], deny => [] },
+   hongkong   => { allow => [ 'http:\/\/hk\.' ], deny => [] },
+   india      => { allow => [ 'http:\/\/in\.' ], deny => [] },
+   ireland    => { allow => [ 'http:\/\/uk\.' ], deny => [] },
+   italy      => { allow => [ 'http:\/\/it\.' ], deny => [] },
+   japan      => { allow => [ 'yahoo\.co\.jp' ], deny => [] },
+   korea      => { allow => [ 'http:\/\/kr\.' ], deny => [] },
+   mexico     => { allow => [ 'http:\/\/mx\.' ], deny => [] },
+   norway     => { allow => [ 'http:\/\/no\.' ], deny => [] },
+   singapore  => { allow => [ 'http:\/\/sg\.' ], deny => [] },
+   spain      => { allow => [ 'http:\/\/es\.' ], deny => [] },
+   sweden     => { allow => [ 'http:\/\/se\.' ], deny => [] },
+   taiwan     => { allow => [ 'http:\/\/tw\.' ], deny => [] },
+   uk         => { allow => [ 'http:\/\/uk\.' ], deny => [] },
+   us         => { allow => [ 'http:\/\/(dir|www)\.' ], deny => [] },
+   us_chinese => { allow => [ 'http:\/\/chinese\.' ], deny => [] },
+   us_spanish => { allow => [ 'http:\/\/espanol\.' ], deny => [] },
+);
+
+my %todo = (  );       # URLs to parse
+my %done = (  );       # parsed/finished URLs
+my %errors = (  );     # broken URLs with errors
+my %rejects = (  );    # URLs rejected by the script
+
+# print out a "we're off!" line, then
+# begin walking the site we've been told to.
+print "=" x 80 . "\nStarted Yahoo! spider...\n" . "=" x 80 . "\n";
+our $site; foreach $site (@sites) {
+
+    # for each of the sites that have been passed on the
+    # command line, we make a title for them, add them to
+    # the TODO list for downloading, then call walksite(  ),
+    # which downloads the URL, looks for more URLs, etc.
+    my $title = "Yahoo! " . ucfirst($site) . " front page";
+    $todo{$ys{$site}} = $title; walksite(  ); # process.
+
+}
+
+# once we're all done with all the URLs, we print a
+# report about all the information we've gone through.
+print "=" x 80 . "\nURLs downloaded and parsed:\n" . "=" x 80 . "\n";
+foreach my $url (keys %done) { print "$url => $done{$url}\n"; }
+print "=" x 80 . "\nURLs that couldn't be downloaded:\n" . "=" x 80 . "\n";
+foreach my $url (keys %errors) { print "$url => $errors{$url}\n"; }
+print "=" x 80 . "\nURLs that got rejected:\n" . "=" x 80 . "\n";
+foreach my $url (keys %rejects) { print "$url => $rejects{$url}\n"; }
+
+# this routine grabs the first entry in our TODO
+# list, downloads the content, and looks for more URLs.
+# we stay in walksite until there are no more URLs
+# in our TODO list, which could be a good long time.
+sub walksite {
+
+    do {
+        # get first URL to do.
+        my $url = (keys %todo)[0];
+
+        # download this URL.
+        print "-> trying $url ...\n";
+        my $browser = LWP::UserAgent->new;
+        my $resp = $browser->get( $url, 'User-Agent' => 'Y!SpiderHack/1.0' );
+
+        # check the results.
+        if ($resp->is_success) {
+            my $base = $resp->base || '';
+            print "-> base URL: $base\n";
+            my $data = $resp->content; # get the data.
+            print "-> downloaded: " . length($data) . " bytes of $url\n";
+
+            # find URLs using a link extorter. relevant ones
+            # will be added to our TODO list of downloadables.
+            # this passes all the found links to findurls(  )
+            # below, which determines if we should add the link
+            # to our TODO list, or ignore it due to filtering.
+            HTML::LinkExtor->new(\&findurls, $base)->parse($data);
+
+            ###########################################################
+            # add your own processing here. perhaps you'd like to add #
+            # a keyword search for the downloaded content in $data?   #
+            ###########################################################
+
+        } else {
+            $errors{$url} = $resp->message(  );
+            print "-> error: couldn't download URL: $url\n";
+            delete $todo{$url};
+        }
+
+        # we're finished with this URL, so move it from
+        # the TODO list to the done list, and print a report.
+        $done{$url} = $todo{$url}; delete $todo{$url};
+        print "-> processed legal URLs: " . (scalar keys %done) . "\n";
+        print "-> remaining URLs: " . (scalar keys %todo) . "\n";
+        print "-" x 80 . "\n";
+    } until ((scalar keys %todo) == 0);
+}
+
+# callback routine for HTML::LinkExtor. For every
+# link we find in our downloaded content, we check
+# to see if we've processed it before, then run it
+# through a bevy of regexp rules (see the top of
+# this script) to see if it belongs in the TODO.
+sub findurls {
+    my($tag, %links) = @_;
+    return if $tag ne 'a';
+    return unless $links{href};
+    print "-> found URL: $links{href}\n";
+
+    # already seen this URL, so move on.
+    if (exists $done{$links{href}} ||
+        exists $errors{$links{href}} || 
+        exists $rejects{$links{href}}) {
+        print "--> I've seen this before: $links{href}\n"; return;
+    }
+
+    # now, run through our filters.
+    unless (exists($todo{$links{href}})) {
+        my ($ga, $gd, $la, $ld); # counters.
+        foreach (@{$rules{global}{'allow'}}) { 
+            $ga++ if $links{href} =~ /$_/i; 
+        }
+        foreach (@{$rules{global}{'deny'}}) { 
+            $gd++ if $links{href} =~ /$_/i; 
+        }
+        foreach (@{$rules{$site}{'allow'}}) { 
+            $la++ if $links{href} =~ /$_/i; 
+        }
+        foreach (@{$rules{$site}{'deny'}}) { 
+            $ld++ if $links{href} =~ /$_/i; 
+        }
+
+        # if there were denials or NO allowances, we move on.
+        if ($gd or $ld) { print "-> rejected: $links{href}\n"; return; }
+        unless ($ga or $la) { print "-> rejected: $links{href}\n"; return; }
+
+        # we passed our filters, so add it on the barby.
+        print "-> added $links{href} to my TODO list\n";
+        $todo{$links{href}} = $links{href};
+    }
+}

@@ -1,0 +1,61 @@
+#!/usr/bin/perl -w
+
+# aggsearch - aggregate searching engine
+#
+# This file is distributed under the same licence as Perl itself.
+#
+# by rik - ora@rikrose.net
+
+######################
+# support stage      #
+######################
+
+use strict;
+
+# change this, if neccessary.
+my $pluginDir = "plugins";
+
+# if the user didn't enter any search terms, yell at 'em.
+unless (@ARGV) { print 'usage: aggsearch "search terms"', "\n"; exit; }
+
+# this routine actually executes the current
+# plug-in, receives the tabbed data, and sticks
+# it into a result array for future printing.
+sub query {
+    my ($plugin, $args, @results) = (shift, shift);
+    my $command = $pluginDir . "/" . $plugin . " " . (join " ", @$args);
+    open RESULTS, "$command |" or die "Plugin $plugin failed!\n";
+    while (<RESULTS>) {
+        chomp; # remove new line.
+        my ($url, $name) = split /\t/;
+        push @results, [$name, $url];
+    } close RESULTS;
+
+    return @results;
+}
+
+######################
+# find plug-ins stage #
+######################
+
+opendir PLUGINS, $pluginDir
+   or die "Plugin directory \"$pluginDir\"".
+     "not found! Please create, and populate\n";
+my @plugins = grep {
+    stat $pluginDir . "/$_"; -x _ && ! -d _ && ! /\~$/;
+} readdir PLUGINS; closedir PLUGINS;
+
+
+######################
+# query stage        #
+######################
+
+for my $plugin (@plugins){
+    print "$plugin results:\n";
+    my @results = query $plugin, \@ARGV;
+    for my $listref (@results){
+        print " $listref->[0] : $listref->[1] \n"
+    } print "\n";
+}
+
+exit 0;

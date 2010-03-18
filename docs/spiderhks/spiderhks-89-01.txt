@@ -1,0 +1,72 @@
+#!/usr/bin/perl -w
+use strict;
+use LWP::Simple;
+use SOAP::Lite;
+
+# fill in your google.com API information here.
+my $google_key  = "your Google API key here";
+my $google_wdsl = "GoogleSearch.wsdl";
+my $gsrch       = SOAP::Lite->service("file:$google_wdsl");
+
+# get our data from Fark's "friends".
+my $fark = get("http://www.fark.com/") or die $!;
+$fark =~ m!Friends:</td></tr>(.*?)<tr><td class=\"lmhead\">Fun Games:!migs; 
+my $farklinks = $1; # all our relevances are in here.
+
+# and now loop through each entry.
+while ($farklinks =~ m!href="(.*?)"!gism) {
+   my $farkurl = $1; next unless $farkurl;
+   my @checklist; # urls to check for safety.
+   print "\n\nChecking $farkurl.\n";
+
+   # getting the full result count for this URL.
+   my $count = $gsrch->doGoogleSearch($google_key, $farkurl,
+                        0, 1, "false", "",  "false", "", "", "");
+   my $firstresult = $count->{estimatedTotalResultsCount};
+   print "$firstresult matching results were found.\n";
+   if ($firstresult > 50) { $firstresult = 50; }
+
+   # now, get a maximum of 50 results, with no safe search.
+   # getting the full result count for this URL.
+   my $counter = 0; while ($counter < $firstresult) {
+
+       my $urls = $gsrch->doGoogleSearch($google_key, $farkurl,
+                           $counter, 10, "false", "",  "false", "", "", "");
+
+       foreach my $hit (@{$urls->{resultElements}}) {
+           push (@checklist, $hit->{URL}); 
+       } $counter = $counter +10; 
+   }
+
+   # and now check each of the matching URLs.
+   my (@goodurls, @badurls); # storage.
+   foreach my $urltocheck (@checklist) {
+       $urltocheck =~ s/http:\/\///;
+
+       my $firstcheck = $gsrch->doGoogleSearch($google_key, $urltocheck,
+                                 0, 1, "true", "",  "true", "", "", "");
+
+       # check our results. if no matches, it's naughty.
+       my $firstnumber = $firstcheck->{estimatedTotalResultsCount} || 0;
+       if ($firstnumber == 0) { push @badurls, $urltocheck; }
+       else { push @goodurls, $urltocheck; }
+   }
+
+   # and spit out some results.
+   my ($goodcount, $badcount) = (scalar(@goodurls), scalar(@badurls));
+   print "There are $goodcount good URLs and $badcount ".
+         "possibly impure URLs.\n"; # wheeEeeeEE!
+
+   # display bad domains if there are only a few.
+   unless ( $badcount >= 10 || $badcount == 0) {
+       print "The bad URLs are\n";
+       foreach (@badurls) {
+          print " http://$_\n"; 
+       }
+    }
+
+   # happy percentage display.
+   my $percent = $goodcount * 2; my $total = $goodcount+$badcount;
+   if ($total==50) { print "This URL is $percent% pure!"; }
+
+}

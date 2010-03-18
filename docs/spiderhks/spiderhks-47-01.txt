@@ -1,0 +1,66 @@
+#!/usr/bin/perl -w
+
+use strict;
+use Date::Manip;
+use LWP::Simple;
+use Getopt::Long;
+
+$ENV{TZ} = "GMT" if $^O eq "MSWin32";
+
+# the homepage for Yahoo!'s "What's New".
+my $new_url = "http://dir.yahoo.com/new/";
+
+# the major categories at Yahoo!. hashed because
+# we'll use them to hold our counts string.
+my @categories = ("Arts & Humanities",    "Business & Economy",
+                  "Computers & Internet", "Education",
+                  "Entertainment",        "Government",
+                  "Health",               "News & Media",
+                  "Recreation & Sports",  "Reference",
+                  "Regional",             "Science", 
+                  "Social Science",       "Society & Culture");
+my %final_counts; # where we save our final readouts.
+
+# load in our options from the command line.
+my %opts; GetOptions(\%opts, "c|count=i");
+die unless $opts{c}; # count sites from past $i days.
+
+# if we've been told to count the number of new sites,
+# then we'll go through each of our main categories
+# for the last $i days and collate a result.
+
+# begin the header
+# for our import file.
+my $header = "Category";
+
+# from today, going backwards, get $i days.
+for (my $i=1; $i <= $opts{c}; $i++) {
+
+   # create a Data::Manip time that will
+   # be used to construct the last $i days.
+   my $day; # query for Yahoo! retrieval.
+   if ($i == 1) { $day = "yesterday"; }
+   else { $day = "$i days ago"; }
+   my $date = UnixDate($day, "%Y%m%d");
+
+   # add this date to
+   # our import file.
+   $header .= "\t$date";
+
+   # and download the day.
+   my $url = "$new_url$date.html";
+   my $data = get($url) or die $!;
+
+   # and loop through each of our categories.
+   my $day_count; foreach my $category (sort @categories) {
+       $data =~ /$category.*?(\d+)/; my $count = $1 || 0;
+       $final_counts{$category} .= "\t$count"; # building our string.
+   }
+}
+
+# with all our counts finished,
+# print out our final file.
+print $header . "\n";
+foreach my $category (@categories) {
+   print $category, $final_counts{$category}, "\n";
+}

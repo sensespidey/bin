@@ -1,0 +1,64 @@
+#!/usr/bin/perl -w
+#
+# HoroPod - save your daily horoscope to the iPod.
+# http://disobey.com/d/code/ or contact morbus@disobey.com.
+#
+# This code is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+
+use strict; $|++;
+my $VERSION = "1.0";
+use File::Spec::Functions;
+
+# make sure we have the modules we need, else die peacefully.
+eval("use LWP;"); die "[err] LWP is not installed.\n" if $@;
+
+# really cheap Perl-only way of finding the path to
+# the currently mounted iPod. searches the mounted
+# Volumes for an iPod_Control folder and uses that.
+my $ipod = glob("/Volumes/*/iPod_Control");
+unless ($ipod) { die "[err] Could not find an iPod: $!\n"; }
+$ipod =~ s/iPod_Control//g;  # we want one directory higher.
+my $ipod_dir = catdir($ipod, "Notes", "Horoscopes");
+mkdir $ipod_dir;  # no error checking by intention.
+
+# create a downloader, faking the User-Agent to get past filters.
+my $ua = LWP::UserAgent->new(agent => 'Mozilla/4.76 [en] (Win98; U)');
+
+# now, load up our horoscopes. first, define all the
+# signs - these are used throughout the forloop.
+my @signs = qw( aries taurus gemini cancer leo virgo libra
+                scorpio sagittarius capricorn aquarius pisces );
+
+# loop through each sign.
+foreach my $sign (@signs) {
+
+    # make it purdier for humans.
+    my $display_sign = ucfirst($sign);
+
+    # the Yahoo! URL, specific to the current sign.
+    print "Grabbing horoscope for $display_sign...\n";
+    my $url = "http://astrology.yahoo.com/us/astrology/".
+                "today/$sign"."dailyhoroscope.html";
+
+    # suck down the data or die.
+    my $data = $ua->get($url)->content
+      or die "[err] Could not download any data: $!\n";
+
+    # snag the date by signature, not design.
+    $data =~ /(\w{3} \w{3}\.? \d{1,2}, \d{4})/; my $date = $1;
+
+    # and get the relevance. we could use an
+    # HTML parser, but this is mindlessly easier.
+    my $preface = '<font face="Arial" size="-1" color=black>';
+    my $anteface = '</font></TD></TR></table>'; # ante up!
+    $data =~ /$preface(.*)$anteface/i; my $proverb = $1;
+
+    # save this proverb to our file.
+    my $ipod_file = catfile($ipod_dir, $display_sign);
+    open(IPOD_FILE, ">$ipod_file") or die "[err] Could not open file: $!\n";
+    print IPOD_FILE "$display_sign\n$date\n\n";
+    print IPOD_FILE "$proverb\n"; close(IPOD_FILE);
+
+}

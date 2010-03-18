@@ -1,0 +1,74 @@
+#!/usr/bin/perl -w
+# textbooks.pl
+# Generates a list of O'Reilly books used
+# as textbooks in the top 20 universities.
+# Usage: perl textbooks.pl
+
+use strict;
+use SOAP::Lite;
+
+# all the Google information
+my $google_key  = "your google key here";
+my $google_wdsl = "GoogleSearch.wsdl";
+my $gsrch       = SOAP::Lite->service("file:$google_wdsl");
+
+my @toptwenty = ("site:cmu.edu", "site:mit.edu", "site:stanford.edu",
+       "site:berkeley.edu", "site:uiuc.edu","site:cornell.edu",
+       "site:utexas.edu", "site:washington.edu", "site:caltech.edu",
+       "site:princeton.edu", "site:wisc.edu", "site:gatech.edu",
+       "site:umd.edu", "site:brown.edu", "site:ucla.edu",
+       "site:umich.edu", "site:rice.edu", "site:upenn.edu",
+       "site:unc.edu", "site:columbia.edu");
+
+my $twentycount = 0;
+open (OUT,'>top20.txt')
+ or die "Couldn't open: $!";
+
+while ($twentycount < 20) {
+
+   # our five universities
+   my $arrayquery =
+      "( $toptwenty[$twentycount] | $toptwenty[$twentycount+1] ".
+      "| $toptwenty[$twentycount+2] | $toptwenty[$twentycount+3] ".
+      "| $toptwenty[$twentycount+4] )";
+
+   # our search term.
+   my $googlequery = "\"o'reilly * associates\" syllabus $arrayquery"; 
+   print "Searching for $googlequery\n"; 
+
+   # and do it, up to a maximum of 50 results.
+   my $counter = 0; while ($counter < 50) {
+       my $result = $gsrch->doGoogleSearch($google_key, $googlequery,
+                            $counter, 10, "false", "",  "false",
+                            "lang_en", "", "");
+       # foreach result.
+       foreach my $hit (@{$result->{'resultElements'}}){
+           my $urlcheck = $hit->{'URL'};
+           my $titlecheck = $hit->{'title'}; 
+           my $snip = $hit->{'snippet'};
+
+           # if the URL or title has a three-digit
+           # number in it, we clean up the snippet
+           # and print it out to our file.
+           if ($urlcheck =~/http:.*?\/.*?\d{3}.*?/
+                 or $titlecheck =~/\d{3}/) {
+              $snip =~ s/<b>/ /g;
+              $snip =~ s/<\/b>/ /g;
+              $snip =~ s/&#39;/'/g;
+              $snip =~ s/&quot;/"/g;
+              $snip =~ s/&amp;/&/g;
+              $snip =~ s/<br>/ /g;
+              print OUT "$hit->{title}\n";
+              print OUT "$hit->{URL}\n";
+              print OUT "$snip\n\n";
+           }
+        }
+
+        # go get 10 more
+        # search results.
+        $counter += 10;
+   }
+
+   # our next schools.
+   $twentycount += 5; 
+}

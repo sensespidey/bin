@@ -1,0 +1,45 @@
+#!/usr/bin/perl -w
+
+use strict;
+use LWP::Simple;
+use HTML::LinkExtor;
+use SOAP::Lite;
+
+my $google_key  = "your API key goes here";
+my $google_wdsl = "GoogleSearch.wsdl";
+my $yahoo_dir   = shift || "/Computers_and_Internet/Data_Formats/XML_  _".
+                  "eXtensible_Markup_Language_/RSS/News_Aggregators/";
+
+# download the Yahoo! directory.
+my $data = get("http://dir.yahoo.com" . $yahoo_dir) or die $!;
+
+# create our Google object.
+my $google_search = SOAP::Lite->service("file:$google_wdsl");
+my %urls; # where we keep our counts and titles.
+
+# extract all the links and parse 'em.
+HTML::LinkExtor->new(\&mindshare)->parse($data);
+sub mindshare { # for each link we find...
+
+    my ($tag, %attr) = @_;
+
+    # continue on only if the tag was a link,
+    # and the URL matches Yahoo!'s redirectory.
+    return if $tag ne 'a';
+    return unless $attr{href} =~ /srd.yahoo/;
+    return unless $attr{href} =~ /\*http/;
+
+    # now get our real URL.
+    $attr{href} =~ /\*(http.*)/; my $url = $1;
+
+    # and process each URL through Google.
+    my $results = $google_search->doGoogleSearch(
+                        $google_key, "link:$url", 0, 1,
+                        "true", "", "false", "", "", ""
+                  ); # wheee, that was easy, guvner.
+    $urls{$url} = $results->{estimatedTotalResultsCount};
+}
+
+# now sort and display.
+my @sorted_urls = sort { $urls{$b} <=> $urls{$a} } keys %urls;
+foreach my $url (@sorted_urls) { print "$urls{$url}: $url\n"; }

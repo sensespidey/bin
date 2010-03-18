@@ -1,0 +1,9 @@
+<html>
+<head>
+  <title>Favorites</title>
+</head>
+<frameset cols="250,*">
+  <frame name="nav" scrolling="yes" src="favorites.html" />
+  <frame name="net" src="http://refdesk.com"/>
+</frameset>
+</html>

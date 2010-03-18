@@ -1,0 +1,108 @@
+#!/usr/bin/perl -w
+use strict;
+use LWP::Simple;
+use URI::Escape;
+
+# $MAX_BBB_SEARCH_RETRIES is the number of times that the
+# script will attempt to look up the URL on the BBB web site. 
+# (Experimentally, the BBB web site appeared to give "database
+# unavailable" error messages about 30% of the time.)
+my $MAX_BBB_SEARCH_RETRIES = 3;
+
+# $MAX_BBB_REFERRAL_PAGE_RETRIES is the number of times the
+# script will attempt to download the company information
+# from the URL provided in the search results.
+my $MAX_BBB_REFERRAL_PAGE_RETRIES = 3;
+
+# suck in our business URL, and append it to the BBB URL.
+my $business_url = shift || die "You didn't pass a URL for checking!\n";
+my $search_url   = "http://search.bbb.org/results.html?tabletouse=".
+                   "url_search&url=" . $business_url;
+my %company; # place we keep company info.
+
+# look for the results until requested.
+for (my $i = 1; $i <= $MAX_BBB_SEARCH_RETRIES; ++$i) {
+    my $data = get($search_url); # gotcha, bugaboo!
+
+    # did we have a problem? pause if so.
+    if ($data =~ /apologize.*delay/ or !defined($data)) {
+       print "Connection to BBB failed. Waiting 5 seconds to retry.\n";
+       sleep(5); next; # let's try this again, shall we?
+    }
+
+    # die if there's no data to yank.
+    die "There were no companies found for this URL.\n"
+         if $data =~ /There are no companies/i;
+
+    # get the company name, address, and redirect.
+    if ($data =~ /<!-- n -->.*?href="(.*?)">(.*)<!--  -->.*?">(.*)<\/f/i) {
+       $company{redir}   = "http://search.bbb.org/$1";
+       $company{name}    = $2; $company{address} = $3;
+       $company{address} =~ s/<br>/\n/g;
+       print "\nCompany name and address:\n";
+       print "$company{name}\n$company{address}\n\n";
+    }
+
+    # if there was no redirect, then we can't
+    # move on to the local BBB site, so we die.
+    unless ($company{redir}) {
+      die "Unable to process the results returned. You can inspect ".
+          "the results manually at the following url: $search_url\n"; }
+
+    last if $data;
+}
+
+# now that we have the redirect for the local BBB site,
+# we'll try to download its contents and parse them.
+for (my $i = 1; $i <= $MAX_BBB_REFERRAL_PAGE_RETRIES; ++$i) {
+    my $data = get($company{redir}); 
+
+    # did we have a problem? pause if so.
+    unless (defined $data) {
+       print "Connection to BBB failed. Waiting 5 seconds to retry.\n";
+       sleep(5); next; # let's try this again, shall we?
+    }
+    
+    $data =~ s/\n|\f|\r//g; # grab even more information.
+    $data =~ s/\n|\f|\r//g; # grab even more information.
+    if ($data=~/Date:<\/b>.*?<td.*?>(.*?)<\/td>/i){$company{start}=$1;}
+    if ($data=~/Entity:<\/b>.*?<td.*?>(.*?)<\/td>/i){$company{entity}=$1;}
+    if ($data=~/l ?:<\/b>.*?<td.*?>(.*?)<\/td>/i){$company{principal}=$1;}
+    if ($data=~/Phone.*?:<\/b>.*?<td.*?>(.*?)<\/td>/i){$company{phone}=$1;}
+    if ($data=~/Fax.*?:<\/b>.*?<td.*?>(.*?)<\/td>/){$company{fax}=$1;}
+    if ($data=~/Status:<\/b>.*?<td.*?>(.*?)<\/td>/){$company{mbr}=$1;}
+    if ($data=~/BBB:<\/b>.*?<td.*?>(.*?)<\/td>/){$company{joined}=$1;}
+    if ($data=~/sification:<\/b>.*?<td.*?>(.*?)<\/td>/){$company{type}=$1;}
+    last if $data;
+}
+
+# print out the extra data we've found.
+print "Further information (if any):\n";
+foreach (qw/start_date entity principal phone fax mbr joined type/) {
+   next unless $company{$_}; # skip blanks.
+   print " Start Date: " if $_ eq "start_date";
+   print " Type of Entity: " if $_ eq "entity";
+   print " Principal: " if $_ eq "principal";
+   print " Phone Number: " if $_ eq "phone";
+   print " Fax Number: " if $_ eq "fax";
+   print " Membership Status: " if $_ eq "mbr";
+   print " Date Joined BBB: " if $_ eq "joined";
+   print " Business Classification: " if $_ eq "type";
+   print "$company{$_}\n";
+} print "\n";
+
+# alright. we have all our magic data that we can get from the 
+# BBB, so let's see if there's anything on PlanetFeedback.com to display.
+my $planetfeedback_url = "http://www.planetfeedback.com/sharedLetters".
+                         "Results/1,2933,,00.html?frmCompany=".
+                         uri_escape($company{name})."&frmFeedbackType".
+                         "One=0&frmIndustry=0&frmFeedbackTypeTwo=0".
+                         "&frmMaxValue=20&buttonClicked=submit1".
+                         "&frmEventType=0";
+my $data = get($planetfeedback_url) or # go, speed
+  die "Error downloading from PlanetFeedback: $!"; # racer, go!
+
+# did we get anything worth showing?
+if ($data =~ /not posted any Shared Letters/i) {
+   print "No feedback found for company '$company{name}'\n";
+} else { print "Feedback available at $planetfeedback_url\n"; }

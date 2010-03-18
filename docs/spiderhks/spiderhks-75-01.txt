@@ -1,0 +1,156 @@
+#!/usr/bin/perl -w
+#
+# geospider.pl
+#
+# Geotargeting spider -- queries Google through the Google API, extracts
+# hostnames from returned URLs, looks up addresses of hosts, and matches
+# addresses of hosts against the IP-to-Country database from Directi:
+# ip-to-country.directi.com. For more information about this software:
+# http://www.artymiak.com/software or contact jacek@artymiak.com
+# 
+# This code is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+
+use strict; 
+use Getopt::Std;
+use Net::Google;
+use constant GOOGLEKEY => 'Your Google API key here;
+use Socket;
+
+my $help = <<"EOH";
+----------------------------------------------------------------------------
+Geotargeting trend analysis spider
+----------------------------------------------------------------------------
+Options:
+
+  -h    prints this help
+  -q    query in utf8, e.g. 'Spidering Hacks'
+  -l    language codes, e.g. 'en fr jp'
+  -d    domains, e.g. '.com'
+  -s    which result should be returned first (count starts from 0), e.g. 0
+  -n    how many results should be returned, e.g. 700
+----------------------------------------------------------------------------
+EOH
+
+# define our arguments and show the
+# help if asked, or if missing query.
+my %args; getopts("hq:l:d:s:n:", \%args);
+die $help if exists $args{h};
+die $help unless $args{'q'};
+
+# create the Google object.
+my $google = Net::Google->new(key=>GOOGLEKEY);
+my $search = $google->search(  );
+
+# language, defaulting to English.
+$search->lr(qw($args{l}) || "en");
+
+# what search result to start at, defaulting to 0.
+$search->starts_at($args{'s'} || 0);
+
+# how many results, defaulting to 10.
+$search->starts_at($args{'n'} || 10);
+
+# input and output encoding.
+$search->ie(qw(utf8)); $search->oe(qw(utf8));
+
+my $querystr; # our final string for searching.
+if ($args{d}) { $querystr = "$args{q} .site:$args{d}"; }
+else { $querystr = $args{'q'} } # domain specific searching.
+
+# load in our lookup list from
+# http://ip-to-country.directi.com/
+my $file = "ip-to-country.csv";
+print STDERR "Trying to open $file... \n";
+open (FILE, "<$file") or die "[error] Couldn't open $file: $!\n";
+
+# now load the whole shebang into memory.
+print STDERR "Database opened, loading... \n";
+my (%ip_from, %ip_to, %code2, %code3, %country);
+my $counter=0; while (<FILE>) {
+    chomp; my $line = $_; $line =~ s/"//g; # strip all quotes.
+    my ($ip_from, $ip_to, $code2, $code3, $country) = split(/,/, $line);
+
+    # remove trailing zeros.
+    $ip_from =~ s/^0{0,10}//g; 
+    $ip_to =~ s/^0{0,10}//g;
+
+    # and assign to our permanents.
+    $ip_from{$counter} = $ip_from;
+    $ip_to{$counter}   = $ip_to;
+    $code2{$counter}   = $code2;
+    $code3{$counter}   = $code3;
+    $country{$counter} = $country;
+    $counter++; # move on to next line.
+}
+
+$search->query(qq($querystr));
+print STDERR "Querying Google with $querystr... \n";
+print STDERR "Processing results from Google... \n";
+
+# for each result from Google, display 
+# the geographic information we've found.
+foreach my $result (@{$search->response(  )}) {
+    print "-" x 80 . "\n";
+    print " Search time: " . $result->searchTime(  ) . "s\n";
+    print "       Query: $querystr\n";
+    print "   Languages: " . ( $args{l} || "en" ) . "\n";
+    print "      Domain: " . ( $args{d} || "" ) . "\n";
+    print "    Start at: " . ( $args{'s'} || 0 ) . "\n";
+    print "Return items: " . ( $args{n} || 10 ) . "\n";
+    print "-" x 80 . "\n";
+
+    map {
+        print "url: " . $_->URL(  ) . "\n";
+        my @addresses = get_host($_->URL(  ));
+        if (scalar @addresses != 0) {
+            match_ip(get_host($_->URL(  )));
+        } else {
+            print "address: unknown\n";
+            print "country: unknown\n";
+            print "code3: unknown\n";
+            print "code2: unknown\n";
+        } print "-" x 50 . "\n";
+    } @{$result->resultElements(  )};
+}
+
+# get the IPs for 
+# matching hostnames.
+sub get_host {
+    my ($url) = @_;
+
+    # chop the URL down to just the hostname.
+    my $name = substr($url, 7); $name =~ m/\//g;
+    $name = substr($name, 0, pos($name) - 1);
+    print "host: $name\n";
+
+    # and get the matching IPs.
+    my @addresses = gethostbyname($name);
+    if (scalar @addresses != 0) {
+        @addresses = map { inet_ntoa($_) } @addresses[4 .. $#addresses];
+    } else { return undef; }
+    return "@addresses";
+}
+
+# check our IP in the
+# Directi list in memory.
+sub match_ip {
+    my (@addresses) = split(/ /, "@_");
+    foreach my $address (@addresses) {
+        print "address: $address\n";
+        my @classes = split(/\./, $address);
+        my $p; foreach my $class (@classes) {
+            $p .= pack("C", int($class));
+        } $p  = unpack("N", $p);
+        my $counter = 0;
+        foreach (keys %ip_to) {
+            if ($p <= int($ip_to{$counter})) {
+                print "country: " . $country{$counter} . "\n";
+                print "code3: "   . $code3{$counter}   . "\n";
+                print "code2: "   . $code2{$counter}   . "\n";
+                last;
+            } else { ++$counter; }
+        } 
+    }
+}

@@ -1,0 +1,101 @@
+#!/usr/bin/perl -w
+#
+# Hack to query and report from www.lexfn.com
+#
+# This code is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+# by rik - ora@rikrose.net
+#
+
+######################
+# support stage      #
+######################
+
+use strict;
+use Getopt::Std qw(getopts);
+use LWP::Simple qw(get);
+use URI::Escape qw(uri_escape uri_unescape);
+use HTML::TokeParser;
+
+sub usage (  ) { print "
+usage: lexfn [options] word1 [word2]
+options available:
+ -s Synonymous     -a Antonym        -b Birth Year
+ -t Triggers       -r Rhymes         -d Death Year
+ -g Generalizes    -l Sounds like    -T Bio Triggers
+ -S Specialises    -A Anagram of     -k Also Known As
+ -c Comprises      -o Occupation of
+ -p Part of        -n Nationality
+
+ or -x for all
+
+word1 is mandatory, but some searches require word2\n\n"
+}
+
+######################
+# parse stage        #
+######################
+
+# grab arguments, and put them into %args hash, leaving nonarguments
+# in @ARGV for us to process later (where word1 and word2 would be)
+# if we don't have at least one argument, we die with our usage.
+my %args; getopts('stgScparlAonbdTkx', \%args);
+if (@ARGV > 2 || @ARGV == 0) { usage(  ); exit 0; }
+
+# turn both our words into queries.
+$ARGV[0] =~ s/ /\+/g; $ARGV[1] ||= "";
+if ($ARGV[1]) { $ARGV[1] =~ s/ /\+/g; }
+
+# begin our URL construction with the keywords.
+my $URL = "http://www.lexfn.com/l/lexfn-cuff.cgi?sWord=$ARGV[0]".
+          "&tWord=$ARGV[1]&query=show&maxReach=2";
+
+# now, let's figure out our command-line arguments. each
+# argument is associated with a relevant search at LexFN,
+# so we'll first create a mapping to and fro.
+my %keynames = (
+ s => 'ASYN', t => 'ATRG', g => 'AGEN', S => 'ASPC', c => 'ACOM', 
+ p => 'APAR', a => 'AANT', r => 'ARHY', l => 'ASIM', A => 'AANA', 
+ o => 'ABOX', n => 'ABNX', b => 'ABBX', d => 'ABDX', T => 'ABTR', 
+ k => 'ABAK'
+);
+
+# if we want everything all matches
+# then add them to our arguments hash,
+# in preparation for our URL.
+if (defined($args{'x'}) && $args{'x'} == 1) {
+   foreach my $arg (qw/s t g l S c p a r l A o n b d T k/){
+       $args{$arg} = 1; # in preparation for URL.
+   } delete $args{'x'}; # x means nothing to LexFN.
+}
+
+# build the URL from the flags we want.
+foreach my $arg (keys %args) { $URL .= '&' . $keynames{$arg} . '=on'; }
+
+######################
+# request stage      #
+######################
+
+# and download it all for parsing.
+my $content = get($URL) or die $!;
+
+######################
+# extract stage      #
+######################
+
+# with the data sucked down, pass it off to the parser.
+my $stream = HTML::TokeParser->new( \$content ) or die $!;
+
+# skip the form on the page, then it's the first <b>
+# after the form that we start extracting data from
+my $tag = $stream->get_tag("/form");
+while ($tag = $stream->get_tag("b")) {
+    print $stream->get_trimmed_text("/b") . " ";
+    $tag = $stream->get_tag("img");
+    print $tag->[1]{alt} . " ";
+    $tag = $stream->get_tag("a");
+    print $stream->get_trimmed_text("/a") . "\n";
+}
+
+exit 0;

@@ -1,0 +1,73 @@
+#!/usr/bin/perl -w
+#
+# Ben Hammersley ben@benhammersley.com
+# Looks up the real-world location of visiting IPs
+# and then finds out the weather at those places
+#
+
+use strict;
+use CAIDA::NetGeoClient;
+use Weather::Underground;
+use Geography::Countries;
+
+my $apachelogfile = "access_log";
+my $numberoflines = 10;
+my $lastdomain    = "";
+
+# Open up the logfile.
+open (LOG, "<$apachelogfile") or die $!;
+
+# Place all the lines of the logfile
+# into an array, but in reverse order.
+my @lines = reverse <LOG>;
+
+# Start our HTML document.
+print "<h2>Where my last few visitors came from:</h2>\n<ul>\n";
+
+# Go through each line one
+# by one, setting the variables.
+my $i; foreach my $line (@lines) {
+    my ($domain,$rfc931,$authuser,$TimeDate,
+        $Request,$Status,$Bytes,$Referrer,$Agent) =
+        $line =~ /^(\S+) (\S+) (\S+) \[([^\]\[]+)\] \"([^"]*)\" (\S+) # (\S+) 
+\"?([^"]*)\"? \"([^"]*)\"/o;
+
+    # If this record is one we saw
+    # the last time around, move on.
+    next if ($domain eq $lastdomain);
+
+    # And now get the geographical info.
+    my $geo     = CAIDA::NetGeoClient->new(  );
+    my $record  = $geo->getRecord($domain);
+    my $city    = ucfirst(lc($record->{CITY}));
+    my $region  = "";
+
+    # Check to see if there is a record returned at all.
+    unless ($record->{COUNTRY}) { $lastdomain = $domain; next; }
+
+    # If city is in the U.S., use the state as the "region". 
+    # Otherwise, use Geography::Countries to munge the two letter
+    # code for the country into its actual name. (Thanks to
+    # Aaron Straup Cope for this tip.)
+    if ($record->{COUNTRY} eq "US") {
+        $region = ucfirst(lc($record->{STATE}));
+    } else { $region = country($record->{COUNTRY}); }
+
+    # Now get the weather information.
+    my $place   = "$city, $region";
+    my $weather = Weather::Underground->new(place => $place);
+    my $data    = $weather->getweather(  );
+    next unless $data; $data = $data->[0];
+
+    # And print it for our HTML.
+    print " <li>$city, $region where it is $data->{conditions}.</li>\n";
+
+    # Record the last domain name
+    # for the repeat prevention check
+    $lastdomain = $domain;
+
+    # Check whether you're not at the limit, and if you are, finish.
+    if ($i++ >= $numberoflines-1) { last; }
+}
+
+print "</ul>";

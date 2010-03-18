@@ -1,0 +1,56 @@
+#!/usr/bin/perl  -w
+use strict; $|++;
+
+use LWP::UserAgent;
+use HTML::LinkExtor;
+use URI::URL;
+
+# where should results go?
+my $result_file  = "./result.html";
+my $keywords_reg = qr/pipe-delimited search terms/;
+my $starter_url  = "your favorite blog here";
+
+# open and create the result.html file.
+open(RESULT, ">$result_file") or die "Couldn't create: $!\n";
+print RESULT "<html><head><title>Spider Findings</title></head><body>\n";
+
+# our workhorse for access.
+my $ua = LWP::UserAgent->new;
+print "\nnow spidering: $starter_url\n";
+
+# begin our link searching. LinkExtor takes a 
+# subroutine argument to handle found links,
+# and then the actual data of the page. 
+HTML::LinkExtor->new(
+  sub {
+        my ($tag, %attr) = @_;
+        return if $tag ne 'a';
+
+        # make any href relative link into
+        # an absolute value, and add to an
+        # internal list of links to check out.
+        my @links = map { url($_, $starter_url)->abs(  ) }
+                      grep { defined } @attr{qw/href/};
+
+        # make 'em all pretty...
+        foreach my $link (@links) {
+           print " + $link\n"; # hello!
+           my $data = $ua->get($link)->content;
+           if ($data =~ m/$keywords_reg/i) {
+              open(RESULT, ">>$result_file");
+              print RESULT "<a href=\"$link\">$link</a><br>\n";
+              close(RESULT); # one match printed, yes!
+           }
+        }
+
+# and now, the actual content that
+# HTML::LinkExtor goes through...
+})->parse(
+  do {
+     my $r = $ua->get($starter_url);
+     $r->content_type eq "text/html" ? $r->content : "";
+  }
+);
+
+print RESULT "</body></html>";
+close RESULT; exit;

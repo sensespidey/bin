@@ -1,0 +1,56 @@
+#!/usr/bin/perl -w
+# review_monitor.pl
+#
+# Monitors products, sending email when a new review is added.
+# Usage: perl review_monitor.pl <asin>
+use strict;
+use LWP::Simple;
+use XML::Simple;
+
+# Your Amazon developer's token.
+my $dev_token='insert developer token';
+
+# Your Amazon affiliate code. Optional.
+# See http://associates.amazon.com/.
+my $af_code='insert affiliate tag';
+
+# Location of sendmail and your email.
+my $sendmailpath = "insert sendmail location";
+my $emailAddress = "insert your email address";
+
+# Take the ASIN from the command line.
+my $asin = shift @ARGV or die "Usage: perl review_monitor.pl <asin>\n";
+
+# Get the number of reviews the last time this script ran.
+open (ReviewCountDB, "<reviewCount_$asin.db");
+my $lastReviewCount = <ReviewCountDB> || 0;
+close(ReviewCountDB); # errors?! bah!
+
+# Assemble the query URL (RESTian).
+my $url = "http://xml.amazon.com/onca/xml2?t=$af_code" . 
+          "&dev-t=$dev_token&type=heavy&f=xml" .
+          "&AsinSearch=$asin";
+
+# Grab the content...
+my $content = get($url);
+die "Could not retrieve $url" unless $content;
+
+# And parse it with XML::Simple.
+my $response = XMLin($content);
+
+# Send email if a review has been added.
+my $currentReviewCount = $response->{Details}->{Reviews}->{TotalCustomerReviews};
+my $productName        = $response->{Details}->{ProductName};
+if ($currentReviewCount > $lastReviewCount) {
+    open (MAIL, "|$sendmailpath -t") || die "Can't open mail program!\n";
+    print MAIL "To: $emailAddress\n";
+    print MAIL "From: Amazon Review Monitor\n";
+    print MAIL "Subject: A Review Has Been Added!\n\n";
+    print MAIL "Review count for $productName is $currentReviewCount.\n";
+    close (MAIL);
+
+    # Write the current review count to a file.
+    open(ReviewCountDB, ">reviewCount_$asin.db");
+    print ReviewCountDB $currentReviewCount;
+    close(ReviewCountDB);
+}

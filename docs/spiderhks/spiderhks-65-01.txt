@@ -1,0 +1,54 @@
+#!/usr/bin/perl -w
+use strict;
+use LWP::Simple;
+use SOAP::Lite;
+
+# All the Google information.
+my $google_key  = "your Google API key";
+my $google_wdsl = "GoogleSearch.wsdl";
+my $gsrch       = SOAP::Lite->service("file:$google_wdsl");
+my $bestsellers = get("http://www.oreilly.com/catalog/top25.html");
+
+# Since we're getting a list of best sellers,
+# we don't have to scrape the rank. Instead
+# we'll just start a counter and increment
+# it every time we move to the next book. 
+my $rank = 1; 
+while ($bestsellers =~ m!\[<a href="(.*?)">Read it on Safari!mgis) {
+   my $bookurl = $1; $bookurl =~ m!http://safari.oreilly.com/(\w+)!;
+   my $oraisbn = $1; next if $oraisbn =~ /^http/;
+
+   # Here we'll search the RIT library for the book's ISBN. Notice
+   # the lovely URL that allows us to get the book information.
+   my $ritdata = get("http://albert.rit.edu/search/i?SEARCH=$oraisbn"); 
+   $ritdata =~ m!field C -->&nbsp;<A HREF=.*?>(.*?)</a>!mgs; 
+   my $ritloc = $1; # now we've got the LOC number.
+
+   # Might as well get the title too, eh?
+   $ritdata =~ m!<STRONG>\n(.*?)</STRONG>!ms; my $booktitle = $1; 
+
+   # Check and see if the LOC code was found for the book.
+   # In a few cases it won't be. If it was, keep on going.
+   if ($ritloc =~ /^Q/ or $ritloc =~ /^Z/) {
+
+      # The first search we're doing is for the entire LOC call number. 
+      my $results = $gsrch ->doGoogleSearch($google_key, "\"$ritloc\"",
+                             0, 1, "false", "",  "false", "", "", "");
+      my $firstcount = $results->{estimatedTotalResultsCount};
+
+      # Now, remove the date and check for all editions.
+      $ritloc =~ m!(.*?) 200\d{1}!ms; my $ritlocall = $1; 
+      $results = $gsrch ->doGoogleSearch($google_key, "\"$ritlocall\"",
+                          0, 1, "false", "",  "false", "", "", "");
+      my $secondcount = $results->{estimatedTotalResultsCount};
+
+      # Now we print everything out.
+      print "The book's title is $booktitle. \n"; 
+      print "The book's O'Reilly bestseller rank is $rank.\n"; 
+      print "The book's LOC number is $ritloc. \n";
+      print "Searching for $ritloc on Google gives $firstcount results. \n"; 
+      print "Searching for all editions on Google ($ritlocall) gives ".
+            "$secondcount results.\n \n";  
+   } 
+   $rank++;
+}

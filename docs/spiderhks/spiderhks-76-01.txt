@@ -1,0 +1,96 @@
+#!/usr/bin/perl -w
+#
+# broute.pl
+# 
+# A European train timetable hack that displays available train connections
+# between two cities, with dates, times, and the number of changes. You
+# can limit the number of acceptable changes with -c. If there are no
+# connections, try earlier/later times/dates or search again for connections
+# with intermediate stops, e.g., instead of Manchester -> Roma, choose 
+# Manchester -> London, London -> Paris, and Paris -> Roma.
+# 
+# This code is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+
+use strict;
+use LWP::UserAgent;
+use Net::HTTP;
+use Getopt::Std;
+
+my $help = <<"EOH";
+---------------------------------------------------------------------------
+Best train routes in Europe
+
+Options: -a   depart from
+         -z   arrive in
+         -d   date (of departure, if -s d; arrival, if -s a)
+              in dd.mm.yy format (e.g. June 1, 2004 is 01.06.04)
+         -t   time (of departure, if -s d; arrival, if -s a)
+              in hh:mm format (e.g. 12:45)
+         -s   select time point for -d and -t options, default -s d
+         -c   maximum number of changes, default 0
+         -h   print this help
+EOH
+
+# set out command-line options,
+# requirements, and defaults.
+my %args; getopt('ha:z:d:t:s:c:', \%args);
+die $help if exists $args{h};
+die $help unless $args{a};
+die $help unless $args{z};
+die $help unless $args{t};
+$args{'s'} = 'depart' unless $args{'s'};
+$args{'s'} = 'depart' if $args{'s'} eq 'd';
+$args{'s'} = 'arrive' if $args{'s'} eq 'a';
+
+# our requesting agent. define our URL and POST.
+my $url  = 'http://www.rozklad.pkp.pl/cgi-bin/new/query.exe/en';
+my $post = "protocol=http:&from=$args{a}&to=$args{z}&datesel=custom".
+           "&date=$args{d}&timesel=$args{s}&time=$args{t}";
+
+# the headers we'll send off...
+my $hdrs = HTTP::Headers->new(Accept => 'text/plain',
+                 'User-Agent' => 'PKPTrainTimetableLookup/1.0');
+
+# and the final requested documents.
+my $uable = HTTP::Request->new(POST, $url, $hdrs, $post);
+my $ua    = LWP::UserAgent->new; my $req = $ua->request($uable);
+
+# if a success,
+# let's parse it!
+die $req->message
+  unless $req->is_success;
+my $doc = $req->content;
+
+$doc =~ s/[\f\t\n\r]//isg; # remove linefeeds.
+while ($doc =~ m/ NAME=sel[0-9]{1,2}>/isg) {
+    my $begin = pos($doc);
+    $doc =~ m/<TR>/isg;
+    my $end = pos($doc);
+    next unless $begin;
+    next unless $end;
+
+    # munch our content into columns.
+    my $content = substr($doc, $begin, ($end -= 5) - $begin);
+    $doc = substr($doc, $end);
+    my @columns = split(/<TD/, $content); shift @columns;
+    foreach my $column (@columns) {
+        $column = '<TD' . $column;
+        $column =~ s/<[^>]*>//g;
+        $column =~ s/<[^>]*//g;
+    }
+
+    # skip schedules that have more hops than we want.
+    if ($args{c} and int $args{c} < int $columns[2]) { next; }
+
+    # and print out our data.
+    print "-" x 80 . "\n";
+    print "             From: $columns[0]\n";
+    print "               To: $columns[1]\n";
+    print "          Changes: $columns[2]\n";
+    print "Date of Departure: $columns[3]\n" if $args{'s'} eq 'depart';
+    print "  Date of Arrival: $columns[3]\n" if $args{'s'} eq 'arrive';
+    print "   Departure Time: $columns[4]\n";
+    print "     Arrival Time: $columns[5]\n";
+}

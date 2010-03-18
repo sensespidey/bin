@@ -1,0 +1,76 @@
+#!/usr/bin/perl -w
+use strict;
+use LWP::Simple;
+use HTML::TableExtract;
+
+# we use the Canada/English site, because its table
+# of package tracking is simpler to parse than the "us".
+my $url_base = "http://www.fedex.com/cgi-bin/tracking?action=track".
+               "&cntry_code=ca_english&tracknumbers="; # woo hah.
+
+# user wants to add a new tracking number.
+my @tracknums; push(@tracknums, shift) if @ARGV;
+
+# user already has some data on disk, so suck it in.
+# we could technically add a grep on the readdir, but
+# we have to postprocess @files anyway, so...
+opendir(CWD, ".") or die $!; my @files = readdir(CWD); closedir(CWD);
+foreach (@files) { /fedex_tracker_(\d+).dat/; push(@tracknums, $1) if $1; }
+unless (@tracknums) { die "We have no packages to track!\n"; }
+my %h; undef (@h{@tracknums}); @tracknums = keys %h; # quick unique.
+
+# each tracking number, look it up.
+foreach my $tracknum (@tracknums) {
+
+    # suck down the data or end.
+    my $data = get("$url_base$tracknum") or die $!;
+    $data =~ s/&nbsp;/ /g; # sticky spaces.
+
+    # and load our specific tracking table in.
+    my $te = HTML::TableExtract->new(
+           headers => ["Scan Activity","Date/Time"]);
+    $te->parse($data); # alright, we've got everything loaded, hopefully.
+
+    # now, get the new info.
+    my $new_data_from_site;
+    foreach my $ts ($te->table_states) {
+       foreach my $row ($ts->rows) {
+           $new_data_from_site .= " " . join(', ', @$row) . "\n";
+       }
+    }
+
+    # if this is a broken tracking number,
+    # move on and try the other ones we have.
+    unless ($new_data_from_site) {
+       print "No data found for package #$tracknum. Skipping.\n"; next; 
+    }
+
+    # if this package has never been tracked
+    # before, then we'll create a file to
+    # hold the data. this will be used for
+    # comparisons on subsequent runs.
+    unless (-e "fedex_tracker_$tracknum.dat") {
+       open(FILE, ">fedex_tracker_$tracknum.dat") or die $!;
+       print FILE $new_data_from_site; close (FILE);
+       print "Adding the following data for #$tracknum:\n";
+       print $new_data_from_site;
+    }
+
+    # if the datafile does exist, load it 
+    # into a string, and do a simplisitic
+    # comparison to see if they're equal.
+    # if not, assume things have changed.
+    if (-e "fedex_tracker_$tracknum.dat") {
+        open(FILE, "<fedex_tracker_$tracknum.dat");
+        $/ = undef; my $old_data_from_file = <FILE>; close(FILE);
+        if ($old_data_from_file eq $new_data_from_site) {
+            print "There have been no changes for package #$tracknum.\n";
+        } else {
+            print "Package #$tracknum has advanced in its journey!\n";
+            print $new_data_from_site; # update the user.
+            open(FILE, ">fedex_tracker_$tracknum.dat");
+            print FILE $new_data_from_site; close(FILE);
+            # the file is updated for next compare.
+        }
+    }
+}

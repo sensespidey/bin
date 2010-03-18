@@ -1,0 +1,77 @@
+#!/usr/bin/perl -w
+use strict;
+use WWW::Mechanize;
+use Getopt::Long;
+
+my $max = 10;
+GetOptions(
+    "max=i" => \$max,
+);
+
+my $search = shift or die "Must specify a search term";
+
+my $w = WWW::Mechanize->new;
+$w->get( "http://www.webshots.com/explore/" );
+$w->success or die "Can't read the search page!\n";
+
+$w->submit_form(
+    form_number => 1,
+    fields => { words => $search },
+);
+$w->success or die "Search failed!\n";
+
+# execution of script stops if warning
+# about adult content is returned.
+if ( $w->content =~ /Adult content/i ) {
+    die "Search term probably returns adult content\n";
+}
+
+my $ndownloads = 0;
+NEXT_PAGE_LOOP: while(1) {
+    $w->content =~ /Page (\d+) of (\d+)/
+       or warn "Can't find page count\n";
+    warn "On page $1 of $2...\n";
+
+    # Pull the "Next" link off before we download pictures
+    my $nextlink = $w->find_link( text => "Next >" );
+    my $currpage = $w->uri;
+
+    my @links = $w->find_all_links( url_regex =>
+        qr[http://community.webshots.com/photo/] );
+
+    for my $link ( @links ) {
+       my $url = $link->url;
+       my $text = $link->text;
+       next if $text eq "[IMG]";
+
+       $w->get( $url );
+       $w->success or die "Couldn't fetch $url";
+
+       if ($w->content=~m[(http://community\.webshots\.com/.+?\.(jpg|gif|png))]) {
+           my $imgurl = $1; my $type = $2;
+
+           # Make a name based on the webshots title for the pic
+           my $filename = lc $text;        # Lowercase everything
+           $filename =~ s/\s+/-/g;         # Spaces become dashes
+           $filename =~ s/[^0-9a-z-]+//g;  # Strip all nonalphanumeric
+           $filename =~ s/(^-|-$)//;       # Strip leading/trailing dashes
+           $filename = "$filename.$type";
+
+           # Bring down the image if we don't already have it
+           if ( -e $filename ) { warn "Already have $filename\n"; }
+           else {
+               # use LWP's :content_file to save our
+               # image directly to the filesystem,
+               # instead of processing it ourselves.
+               warn "Saving $filename...\n";
+               $w->get( $imgurl, ":content_file"=>$filename );
+               ++$ndownloads; last if $ndownloads >= $max;
+           }
+        } else { warn "Couldn't find an image on $url\n"; }
+    }
+
+    last unless $nextlink && ($ndownloads<$max);
+
+    my $nexturl = URI->new_abs( $nextlink->url, $currpage )->as_string;
+    $w->get( $nexturl ); die "$nexturl failed!\n" unless $w->success;
+}

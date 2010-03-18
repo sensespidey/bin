@@ -1,0 +1,26 @@
+<html>
+<body>
+  <h1><a href="<{$FAV_Home}>"><{$FAV_Name}></a></h1>
+  <select onChange="location.replace(this[this.selectedIndex].value)">
+    <{
+      $OUT .= '<option selected>' . $FAV_Folder . '</option>' . "\n";
+      if ( $FAV_Parent ne '' ) {
+        $OUT .= '<option value="' . $FAV_Parent . '">..</option>' . "\n";
+      }
+      foreach my $folder ( sort( keys( %FAV_Folders ) ) ) {
+        $OUT .= '<option value="' . $FAV_Folders{$folder}->{document} .
+          '">&gt;' . $FAV_Folders{$folder}->{label} . '</option>' . "\n";
+      }
+    }>
+  </select>
+  <table>
+    <{
+      foreach my $link ( sort( keys( %FAV_Links ) ) ) {
+        $OUT .= '<tr><td><a target="net" href="' .
+          $FAV_Links{$link}->{href} . '">' .
+          $FAV_Links{$link}->{label} . '</a></td></tr>' . "\n";
+      }
+    }>
+  </table>
+</body>
+</html>

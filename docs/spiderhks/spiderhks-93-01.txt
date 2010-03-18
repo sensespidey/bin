@@ -1,0 +1,55 @@
+#!/usr/bin/perl -w
+# goocount.pl
+# Runs the specified query for every day between the specified
+# start and end dates, returning date and count as CSV. From
+# Tara Calishain, Rael Dornfest, and Google Hacks.
+#
+# usage: goocount.pl query="{query}" start={date} end={date}
+# where dates are of the format: yyyy-mm-dd, e.g. 2002-12-31
+#
+use strict;
+use SOAP::Lite;
+use Time::JulianDay;
+use CGI qw/:standard/;
+
+# Your Google API developer's key.
+my $google_key = 'insert key here';
+
+# Location of the GoogleSearch WSDL file.
+my $google_wdsl = "./GoogleSearch.wsdl";
+
+# For checking date validity.
+my $date_regex = '(\d{4})-(\d{1,2})-(\d{1,2})';
+
+# Make sure all arguments are passed correctly.
+( param('query')
+  and param('start') =~ /^(?:$date_regex)?$/
+  and param('end') =~ /^(?:$date_regex)?$/ 
+) or die qq{usage: goocount.pl query="{query}" start={date} end={date}\n};
+
+# Julian date manipulation.
+my $query = param('query');
+my $yesterday_julian = int local_julian_day(time) - 1;
+my $start_julian = (param('start') =~ /$date_regex/)
+   ? julian_day($1,$2,$3) : $yesterday_julian;
+my $end_julian   = (param('end') =~ /$date_regex/)
+   ? julian_day($1,$2,$3) : $yesterday_julian;
+
+# Create a new Google SOAP request.
+my $google_search  = SOAP::Lite->service("file:$google_wdsl");
+
+# Start our CSV file.
+print qq{"date","count"\n};
+
+# Iterate over each of the Julian dates for your query.
+foreach my $julian ($start_julian..$end_julian) {
+    $full_query = "$query daterange:$julian-$julian";
+    my $results = $google_search->doGoogleSearch( 
+                      $google_key, $full_query, 0, 10, "false",
+                      "",  "false", "", "latin1", "latin1"
+                  );
+
+    # Output our CSV record.
+    print '"', sprintf("%04d-%02d-%02d", inverse_julian_day($julian)),
+               qq{","$result->{estimatedTotalResultsCount}"\n};
+}

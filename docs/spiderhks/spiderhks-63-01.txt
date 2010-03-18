@@ -1,0 +1,79 @@
+#!/usr/bin/perl -w
+use strict; use RRDs;
+use Finance::Quote qw/asx/;
+
+# Declare basic variables.
+my @stocks       = ('IBM','MSFT','LNUX');
+my @stock_prices = (0,0,0);
+my $workdir      = "./stocks";
+my $db           = "$workdir/stocks.rrd";
+my $now          = time(  );
+
+# if the database hasn't been created,
+# do so now, or die with an error.
+if (!-f $db) {
+    RRDs::create ($db, "--start", $now-1,
+          "DS:IBM:ABSOLUTE:900:0:U",
+          "DS:MSFT:ABSOLUTE:900:0:U",
+          "DS:LNUX:ABSOLUTE:900:0:U",
+          "RRA:AVERAGE:0.5:1:4800",
+          "RRA:AVERAGE:0.5:4:4800",
+          "RRA:AVERAGE:0.5:24:3000",
+    );
+
+    if (my $ERROR = RRDs::error) { die "$ERROR\n"; }
+}
+
+# now, get the quote information
+# for IBM, Microsoft, and Linux.
+my $q      = Finance::Quote->new(  );
+my %quotes = $q->fetch("usa",@stocks);
+
+# for each of our stocks, check to 
+# see if we got data, and if so, 
+# add it to our stock prices.
+foreach my $code (@stocks) {
+    my $count = 0; # array index.
+    unless ($quote{$code, "success"}) {
+        warn "$code lookup failed: ".$quote{$code,"errormsg"}."\n";
+        $count++; next; # well, that's not a good sign.
+    }
+
+    # update the stock price, and move to the next.
+    $stock_prices[$count] = $quote{$code,'last'}; $count++;
+}
+
+# we have our stock prices; update our database.
+RRDs::update($db, "--template=" . join(':',@stocks),
+                  "$now:" . join(':',@stock_prices));
+if (my $ERROR = RRDs::error) { die "$ERROR\n"; }
+
+# Generate weekly graph.
+RRDs::graph("$workdir/stocks-weekly.png",
+  "--title",     'Finance::Quote example',
+  "--start",     "-1w",
+  "--end",       $now+60,
+  "--imgformat", "PNG",
+  "--interlace", "--width=450",
+  "DEF:ibm=$db:IBM:AVERAGE",
+  "DEF:msft=$db:MSFT:AVERAGE",
+  "DEF:lnux=$db:LNUX:AVERAGE",
+  "LINE1:ibm#ff4400:ibm\\c",
+  "LINE1:msft#11EE11:msft\\c",
+  "LINE1:lnux#FF0000:lnux\\c"
+); if (my $ERROR = RRDs::error) { die "$ERROR\n"; }
+
+# Generate monthly graph.
+RRDs::graph ("$workdir/stocks-weekly.png",
+  "--title",     'Finance::Quote example',
+  "--start",     "-1m",
+  "--end",       $now+60,
+  "--imgformat", "PNG",
+  "--interlace", "--width=450",
+  "DEF:ibm=$db:IBM:AVERAGE",
+  "DEF:msft=$db:MSFT:AVERAGE",
+  "DEF:lnux=$db:LNUX:AVERAGE",
+  "LINE1:ibm#ff4400:ibm\\c",
+  "LINE1:msft#11EE11:msft\\c",
+  "LINE1:lnux#FF0000:lnux\\c"
+); if (my $ERROR = RRDs::error) { die "$ERROR\n"; }

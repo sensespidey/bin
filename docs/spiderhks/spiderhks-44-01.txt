@@ -1,0 +1,76 @@
+#!/usr/bin/perl -w
+
+use constant USERNAME => 'your username';
+use constant PASSWORD => 'your password';
+
+use strict;
+use File::Path;
+use Getopt::Long;
+use WWW::Yahoo::Groups;
+$SIG{PIPE} = 'IGNORE';
+
+# define the command-line options, and 
+# ensure that a group has been passed.
+my ($debug, $group, $last, $first, $stats);
+GetOptions(
+    "debug"     => \$debug,
+    "group=s"   => \$group,
+    "stats"     => \$stats,
+    "first=i"   => \$first,
+    "last=i"    => \$last,
+); (defined $group) or die "Must specify a group!\n";
+
+# sign into Yahoo! Groups.
+my $w = WWW::Yahoo::Groups->new(  );
+$w->debug( $debug );
+$w->login( USERNAME, PASSWORD );
+$w->list( $group );
+$w->agent->requests_redirectable( [] ); # no redirects now
+
+# first and last IDs of group.
+my $first_id = $w->first_msg_id(  );
+my $last_id = $w->last_msg_id(  );
+print "Messages in $group: $first_id to $last_id\n";
+exit 0 if $stats; # they just wanted numbers.
+
+# default our IDs to the first and last
+# of the $group in question, else use the
+# passed command-line options.
+$first = $first_id unless $first;
+$last  = $last_id  unless $last;
+warn "Fetching $first to $last\n";
+
+# get our specified messages.
+for my $msgnum ($first..$last) {
+    fetch_message( $w, $msgnum );
+}
+
+sub fetch_message {
+    my $w = shift;
+    my $msgnum = shift;
+
+    # Put messages in directories by 100.
+    my $dirname = int($msgnum/100)*100;
+
+    # Create the dir if necessary.
+    my $dir = "$group/$dirname";
+    mkpath( $dir ) unless -d $dir;
+
+    # Don't pull down the message
+    # if we already have it...
+    my $filename = "$dir/$msgnum";
+    return if -f $filename;
+
+    # pull down the content and check for errors.
+    my $content = eval { $w->fetch_message($msgnum) };
+    if ( $@ ) {
+        if ( $@->isa('X::WWW::Yahoo::Groups') ) {
+            warn "Could not handle message $msgnum: ",$@->error,"\n";
+        } else { warn "Could not get content for message $msgnum\n"; }
+    } else {
+        open(FH, ">$filename") 
+          or return warn "Can't create $filename: $!\n";
+        print FH $content; close FH; # data has been saved.
+        $w->autosleep( 5 ); # so now sleep to prevent saturation.
+    }
+}

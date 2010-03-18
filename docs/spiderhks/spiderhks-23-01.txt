@@ -1,0 +1,24 @@
+#!/usr/bin/perl -w
+use strict; 
+
+my (@s) = m{
+      >         # close of previous tag
+      ([^<]+)   # text (name of part, e.g., q/BLACK CARTRIDGE/)
+      <br>
+      ([^<]+)   # part number (e.g., q/HP Part Number: HP C9724A/+)
+      (?:<[^>]+>\s*){4} # separated by four tags
+      (\d+)       # percent remaining
+      |           # --or--
+      (?:
+            # different text values
+            (?:
+                Pages\sRemaining
+                | Low\sReached
+                | Serial\sNumber
+                | Pages\sprinted\swith\sthis\ssupply
+            ) : (?:\s*<[^>]+>){6}\s* # colon, separated by six tags
+        # or just this, within the current element
+        | Based\son\shistorical\s\S+\spage\scoverage\sof\s
+        )
+        (\w+) # and the value we want
+    }gx;

@@ -1,0 +1,35 @@
+#!/usr/bin/perl -w
+use strict;
+use HTML::TokeParser;
+use LWP::Simple;
+
+# the magical URL.
+my $url = "http://www.gamestop.com/search.asp?keyword=&platform=26".
+          "&lookin=title&range=all&genre=0&searchtype=adv&sortby=title";
+
+# the magical data.
+my $data = get($url) or die $!;
+
+# the magical parser.
+my $p = HTML::TokeParser->new(\$data);
+
+# now, find every table that's 510 and 75.
+while (my $token = $p->get_tag("table")) {
+    next unless defined($token->[1]{height});
+    next unless defined($token->[1]{width});
+    next unless $token->[1]{height} == 75;
+    next unless $token->[1]{width} == 510;
+
+    # get our title.
+    $p->get_tag("font"); $p->get_tag("a");
+    my $title = $p->get_trimmed_text;
+
+    # and our price.
+    $p->get_tag("font"); $p->get_tag("/b");
+    my $ptoken = $p->get_token;
+    my $price = $ptoken->[1];
+    $price =~ s/\$//;
+
+    # comma spliced.
+    print "\"$title\",$price\n";
+}

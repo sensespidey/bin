@@ -1,0 +1,185 @@
+#!/usr/bin/perl -w
+use strict;
+use File::Spec;
+use File::Temp;
+use Net::FTP;
+use Text::Template;
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+## Configurable Globals
+
+## $FAV_ROOT = Location of the root of the Favorites folder
+my $FAV_ROOT = File::Spec->join( $ENV{USERPROFILE}, 'Favorites' );
+
+## $FAV_NAME = Top level name to use in favorites folder tree
+my $FAV_NAME = 'Favorites';
+
+## $FAV_TMPL = Text::Template file; output files will use same extension
+my $FAV_TMPL = 'favorites.tmpl.html';
+
+## Host data for publishing favorites via ftp
+my $FAV_HOST = 'myserver.net';
+my $FAV_PATH = 'favorites';
+my $FAV_USER = 'username';
+my $FAV_PASS = 'password';
+
+## End of Configurable Globals
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+my $_FAV_TEMPDIR = File::Temp->tempdir( 'XXXXXXXX', CLEANUP => 1 );
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+sub LoadFavorites {
+
+  # Recursively load the structure of an IE
+  # Favorites directory tree into a tree of hashes.
+
+  my $FolderIn = shift;      # Folder to process
+  my $FavoritesOut = shift;  # Hashref to load with this folder's entries
+
+  # Do a readdir into an array for a
+  # quick load of the directory entries.
+  opendir( FOLDER, $FolderIn ) ||
+    die "Could not open favorites folder '$FolderIn'";
+  my @FolderEntries = readdir( FOLDER );
+  closedir( FOLDER );
+
+  # Process each entry in the directory.
+  foreach my $FolderEntry ( @FolderEntries ) {
+
+    # Skip special names . and ..
+    next if $FolderEntry eq '.' || $FolderEntry eq '..';
+
+    # Construct the full path to the current entry.
+    my $FileSpec = File::Spec->join( $FolderIn, $FolderEntry );
+
+    # Call LoadFavorites recursively if we're processing a directory.
+    if ( -d $FileSpec && !( -l $FileSpec ) ) {
+      $FavoritesOut->{$FolderEntry} = {};
+      LoadFavorites( $FileSpec, $FavoritesOut->{$FolderEntry} );
+    }
+
+    # If it's not a directory, check for a filename that ends with '.url'.
+    # When we find a link file, extract the URL and map the favorite to it.
+    elsif ( $FolderEntry =~ /^.*\.url$/i ) {
+      my ( $FavoriteId ) = $FolderEntry =~ /^(.*)\.url$/i;
+      next if !open( FAVORITE, $FileSpec );
+      ( $FavoritesOut->{$FavoriteId} ) =
+           join( '', <FAVORITE> ) =~ /^URL=([^\n]*)\n/m;
+      close( FAVORITE );
+    }
+  }
+}
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+sub MakeDocName {
+
+  # Quick hack to generate a safe filename for a favorites entry. Replaces
+  # all whitespace and special characters with underscores, concatenates
+  # parent spec with the new spec, and postfixes the the whole thing with
+  # the same file extension as the globally named template document.
+
+  my $FavoriteIn = shift;        # Label of new favorites entry
+  my $ParentFilenameIn = shift;  # MakeDocName of the parent level
+
+  my ( $FileType ) = $FAV_TMPL =~ /\.([^\.]+)$/;
+  $FavoriteIn =~ s/(\s+|\W)/_/g;
+  $ParentFilenameIn =~ s/$FileType$//;
+  return lc( $ParentFilenameIn . $FavoriteIn . '.' . $FileType );
+}
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+sub GenerateFavorites {
+
+  # Recurse through a tree of Favorites entries and generate a document for
+  # each level based on the globally named template document.
+
+  my $FavoritesIn = shift;       # Hashref to current tree level
+  my $FolderNameIn = shift;      # Name of the current folder
+  my $ParentFilenameIn = shift;  # MakeDocName of the parent level
+
+  # Create shortcut identifiers for things that get reused a lot.
+  my $Folder = $FavoritesIn->{$FolderNameIn};
+  my $FolderFilename = MakeDocName( $FolderNameIn, $ParentFilenameIn );
+
+  # Separate the entries in the current folder into folders and links.
+  # Folders can be identified because they are hash references, whereas
+  # links are mapped to simple scalars (the URL of the link).
+  my (%Folders,%Links);
+  foreach my $Favorite ( keys( %{$Folder} ) ) {
+    if ( ref( $Folder->{$Favorite} ) eq 'HASH' ) {
+      $Folders{$Favorite} = { label => $Favorite,
+        document => MakeDocName( $Favorite, $FolderFilename ) };
+    }
+    else {
+      $Links{$Favorite}={label => $Favorite, href => $Folder->{$Favorite} };
+    }
+  }
+
+  # Set up Text::Template variables, fill in the template with the folders
+  # and links at this level of the favorites tree, and then output the
+  # processed document to our temporary folder.
+  my $Template = Text::Template->new( TYPE => 'FILE',
+    DELIMITERS => [ '<{', '}>' ], SOURCE => $FAV_TMPL );
+  my %Vars = (
+    FAV_Name => $FAV_NAME,
+    FAV_Home => MakeDocName( $FAV_NAME ),
+    FAV_Folder => $FolderNameIn,
+    FAV_Parent => $ParentFilenameIn,
+    FAV_Folders => \%Folders,
+    FAV_Links => \%Links
+  );
+  my $Document = $Template->fill_in( HASH => \%Vars );
+  my $DocumentFile = File::Spec->join( $_FAV_TEMPDIR, $FolderFilename );
+  if ( open( FAVORITES, ">$DocumentFile" ) ) {
+    print( FAVORITES $Document );
+    close( FAVORITES );
+  }
+
+  # Generate Favorites recursively for each of this folder's subfolders.
+  foreach my $Subfolder ( keys( %Folders ) ) {
+    GenerateFavorites( $Folder, $Subfolder, $FolderFilename );
+  }
+}
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+sub PublishFavorites {
+
+  # Publish the generated documents via FTP. Pretty
+  # much just gives up if something goes wrong.
+
+  my $ftp = Net::FTP->new( $FAV_HOST ) ||
+    die( "Cannot connect to '$FAV_HOST'" );
+  $ftp->login( $FAV_USER, $FAV_PASS ) ||
+    die( "Authorization for user '$FAV_USER' failed" );
+  $ftp->cwd( $FAV_PATH ) ||
+    die( "Could not CWD to '$FAV_PATH'" );
+  opendir( FOLDER, $_FAV_TEMPDIR ) ||
+    die( "Cannot open working directory '$_FAV_TEMPDIR'" );
+  my @FolderEntries = readdir( FOLDER );
+  closedir( FOLDER );
+  foreach my $FolderEntry ( @FolderEntries ) {
+    next if $FolderEntry eq '.' || $FolderEntry eq '..';
+    $ftp->put( File::Spec->join( $_FAV_TEMPDIR, $FolderEntry ) ) ||
+      warn( "Could not upload '$FolderEntry'...skipped" );
+  }
+  $ftp->quit;
+}
+
+# - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+sub main {
+  my %Favorites;
+  $Favorites{$FAV_NAME} = {};
+  LoadFavorites( $FAV_ROOT, $Favorites{$FAV_NAME} );
+  GenerateFavorites( \%Favorites, $FAV_NAME, '' );
+  PublishFavorites(  );
+}
+
+main(  );

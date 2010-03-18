@@ -1,0 +1,23 @@
+#!/usr/bin/perl -w
+
+# Example Google searching plug-in
+
+use strict;
+use warnings;
+use SOAP::Lite;
+
+# all the Google information
+my $google_key  = "your API key here";
+my $google_wdsl = "GoogleSearch.wsdl";
+my $gsrch       = SOAP::Lite->service("file:$google_wdsl");
+my $query       = join "+", @ARGV;
+
+# do the search...
+my $result = $gsrch->doGoogleSearch($google_key, $query,
+                          1, 10, "false", "",  "false",
+                          "lang_en", "", "");
+
+# and print the results.
+foreach my $hit (@{$result->{'resultElements'}}){
+   print "$hit->{URL}\t$hit->{title}\n";
+}

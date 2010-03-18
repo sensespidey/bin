@@ -1,0 +1,123 @@
+#!/usr/bin/perl -w
+use strict;
+use URI;
+use LWP::Simple;
+use Net::Amazon;
+use XML::Simple;
+use constant AMAZON_TOKEN => 'your token here';
+use constant DEBUG => 0;
+
+# get our arguments. the first argument is the
+# URL to fetch, and the second is the output.
+my $url = shift || die "$0 <url> [<output>]\n";
+my $output = shift || '/www/htdocs/cloud.html';
+
+# we'll need to fetch the Alexa XML at some point, and
+# we'll do it a few different times, so we create a 
+# subroutine for it. Using the URI module, we can
+# correctly encode a URL with a query. In fact, you'll
+# notice the majority of this function is involved with
+# this, and at the end we use LWP::Simple to actually
+# download and return the XML.
+#####################################################
+sub fetch_xml {
+    my $url = shift;
+    $url = "http://$url" unless $url =~ m[^http://];
+    warn "Fetching Alexa data for $url\n" if DEBUG;
+
+    my @args = (
+        cli => 10,     dat => 'snba',
+        ver => '7.0',  url => $url,
+    );
+
+    my $base = 'http://data.alexa.com/data';
+    my $uri = URI->new( $base );
+    $uri->query_form( @args );
+    $uri = $uri->as_string;
+
+    return get( $uri );
+}
+
+# raw XML is no good for us, though, as we want to extract
+# particular items of interest. we use XML::Simple to turn
+# the XML into Perl data structures, because it's easier
+# than fiddling with event handling (as with XML::Parser
+# or XML::SAX), and we know there's only a small amount of
+# data. we want the list of related sites and the list of
+# related products. we extract and return both.
+#####################################################
+sub handle_xml {
+    my $page = shift;
+    my $xml = XMLin( $page );
+    my @related = map {
+        {
+            asin => $_->{ASIN},
+            title => $_->{TITLE},
+            href => $xml->{RLS}{PREFIX}.$_->{HREF},
+        }
+    } @{ $xml->{RLS}{RL} };
+
+    my @products;
+    if (ref $xml->{SD}{AMZN}{PRODUCT} eq 'ARRAY') {
+        @products = map { $_->{ASIN} } @{ $xml->{SD}{AMZN}{PRODUCT} };
+    } else { @products = $xml->{SD}{AMZN}{PRODUCT}{ASIN}; }
+
+    return ( \@related, \@products );
+}
+
+# Functions done; now for the program:
+warn "Start URL is $url\n" if DEBUG;
+my @products; # running accumulation of product ASINs
+
+{
+    my $page = fetch_xml( $url );
+    my ($related, $new_products) = handle_xml( $page );
+    @products = @$new_products; # running list
+
+    for (@$related) {
+        my $xml = fetch_xml( $_->{href} );
+        my ($related, $new_products) = handle_xml( $page );
+        push @products, @$new_products;
+    }
+}
+
+# We now have a list of products in @products, so
+# we'd best do something with them. Let's look
+# them up on Amazon and see what their titles are.
+my $amazon = Net::Amazon->new( token => AMAZON_TOKEN );
+my %products = map { $_ => undef } @products;
+
+for my $asin ( sort keys %products ) {
+    warn "Searching for $asin...\n" if DEBUG;
+    my $response = $amazon->search( asin => $asin );
+    my @products = $response->properties;
+    die "ASIN is not unique!?" unless @products == 1;
+    my $product = $products[0];
+    $products{$asin} = {
+        name => $product->ProductName,
+        price => $product->OurPrice,
+        asin => $asin,
+    };
+}
+
+# Right. We now have name, price, and
+# ASIN. Let's output an HTML report:
+{
+    umask 022;
+    warn "Writing to $output\n" if DEBUG;
+    open my $fh, '>', $output or die $!;
+    print $fh "<html><head><title>Cloud around $url</title></head><body>";
+    if (keys %products) {
+        print $fh "<table>";
+        for my $asin (sort keys %products) {
+            my $data = $products{$asin};
+            printf $fh "<tr><td>".
+                       "<a href=\"http://amazon.com/exec/obidos/ASIN/%s\">".
+                       "%s</a></td> <td>%s</td></tr>",
+                       @{$data}{qw( asin name price )};
+        }
+        print $fh "</table>";
+    }
+    else { print $fh "No related products found.\n"; }
+    print $fh "</body></html>\n";
+}

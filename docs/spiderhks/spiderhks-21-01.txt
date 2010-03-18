@@ -1,0 +1,37 @@
+#!/usr/bin/perl -w
+use strict;
+$|++;
+
+use File::Basename;
+use WWW::Mechanize 0.48;
+
+my $mech = WWW::Mechanize->new(  );
+
+# Get the starting search page
+$mech->get( "http://search.cpan.org" );
+$mech->success or die $mech->response->status_line;
+
+# Select the form, fill the fields, and submit
+$mech->form_number( 1 );
+$mech->field( query => "Lester" );
+$mech->field( mode => "author" );
+$mech->submit(  );
+
+$mech->success or die "post failed: ",
+   $mech->response->status_line;
+
+# Find the link for "Andy"
+$mech->follow_link( text_regex => qr/Andy/ );
+$mech->success or die "post failed: ", $mech->response->status_line;
+
+# Get all the tarbulls
+my @links = $mech->find_all_links( url_regex => qr/\.tar\.gz$/ );
+my @urls = map { $_->[0] } @links;
+
+print "Found ", scalar @urls, " tarballs to download\n";
+
+for my $url ( @urls ) {
+    my $filename = basename( $url );
+    print "$filename --> ";
+    $mech->get( $url, ':content_file'=>$filename );
+    print -s $filename, " bytes\n";

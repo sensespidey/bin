@@ -1,0 +1,97 @@
+#!/usr/bin/perl -w
+use strict;
+use LWP::Simple;
+use URI::Escape;
+use Win32::Sound;
+use SOAP::Lite;
+
+# use your own Google API key here!
+my $google_key  = "your Google key here";
+my $google_wdsl = "GoogleSearch.wsdl";
+
+# load in our lyrics phrase from the command line.
+my $lyrics_phrase = shift or die "Usage: robot-karaoke.pl <phrase>\n";
+
+# and perform the search on Google.
+my $google_search_term = "intitle:\"$lyrics_phrase\" site:lyricsfreak.com";
+my $googleSearch = SOAP::Lite->service("file:$google_wdsl");
+my $result = $googleSearch->doGoogleSearch(
+                      $google_key, $google_search_term,
+                      0, 10, "false", "", "false",
+                      "", "", "");
+
+# if there are no matches, then say so and die.
+die "No LyricsFreak matches were found for '$lyrics_phrase'.\n"
+          if $result->{estimatedTotalResultsCount} == 0;
+  
+# and take the first Google result as
+# the most likely location on LyricsFreak.com.
+my @results         = @{$result->{'resultElements'}};
+my $first_result    = $results[0];
+my $lyricsfreak_url = $first_result->{'URL'};
+print "Downloading lyrics from:\n $lyricsfreak_url\n";
+
+# and download the data from LyricsFreak.com.
+my $content = get($lyricsfreak_url) or die $!;
+print "Connection to LyricsFreak was successful.\n";
+
+# we have the data, so let's parse it.
+# all lyrics are stored in a pre tag,
+# so we delete everything before and after.
+$content =~ s/.*<pre><b>.*<\/b><br>//mgis;
+$content =~ s/<\/pre>.*//mgis;
+my @lyrics_lines = split("\x0d", $content);
+
+# AT&T's demo TTS service takes a maximum of 30 words,
+# so we'll create a mini chunk of the lyrics to send off.
+# each of these chunks will be sent to the TTS server
+# then saved seperately as multiple mini-wav files.
+my (@lyrics_chunks, $current_lyrics_chunk); my $line_counter = 0;
+for (my $i = 0; $i <= scalar(@lyrics_lines) - 1; ++$i) {
+    next if $lyrics_lines[$i] =~ /^\s*$/;
+    $current_lyrics_chunk .= $lyrics_lines[$i] . "\n";
+
+    if (($line_counter == 5) || ($i == scalar(@lyrics_lines) - 1) ) {
+        push(@lyrics_chunks, $current_lyrics_chunk);
+        $current_lyrics_chunk = ''; $line_counter = 0;
+    } $line_counter++;
+}
+
+# now, we'll go through each chunk,
+# and send it off to our TTS server.
+my @temporary_wav_files;
+foreach my $lyrics_chunk (@lyrics_chunks) {
+
+    # and download the data.
+    my $url = 'http://morrissey.naturalvoices.com/tts/cgi-bin/nph-talk';
+    my $req = HTTP::Request->new('POST', $url); # almost there!
+    $req->content('txt=' . uri_escape($lyrics_chunk) .
+                  '&voice=crystal&speakButton=SPEAK');
+    $req->content_type('application/x-www-form-urlencoded');
+    my $res = LWP::UserAgent->new->simple_request($req);
+
+    # incorrect server response? then die.
+    unless ($res->is_success || $res->code == 301) {
+       die "Error connecting to TTS server: " . $res->status_line . ".\n"; }
+
+    # didn't get the response we wanted? die.
+    if ($res->content !~ /can be found <A HREF=([^>]*)>here<\/A>/i) {
+       die "Response from TTS server not understood. Odd.\n"; }
+
+    # side effect of error checking above is to set $1 to
+    # the actual wav file that was generated. this is good.
+    my $wav_url  = "http://morrissey.naturalvoices.com$1";
+    my $wav_file = $1; # for use in saving to disk.
+    $wav_file =~ s/.*?\/(\w+.wav)/$1/;
+    getstore($wav_url, "$wav_file") or
+     die "Download of $wav_file failed: $!";
+    push(@temporary_wav_files, $wav_file);
+}
+
+# with all our files downloaded, play them in
+# order with the Win32::Sound module. else, they
+# just sit there in hopes of the user playing them.
+print  "Playing downloaded wav files...\n";
+foreach my $temporary_wav_file (@temporary_wav_files) {
+    print " Now Playing: $temporary_wav_file\n";
+    Win32::Sound::Play("$temporary_wav_file");

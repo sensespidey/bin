@@ -1,0 +1,53 @@
+#!/usr/bin/perl -w
+use strict;
+use HTML::TableExtract;
+use LWP::Simple;
+use URI::Escape;
+
+# get our restaurant name from the command line.
+my $name = shift || die "Usage: kcrestaurants.pl <string>\n";
+
+# and our constructed URL to the health database.
+my $url = "http://www.decadeonline.com/results.phtml?agency=skc".
+          "&forceresults=1&offset=0&businessname=" . uri_escape($name) .
+          "&businessstreet=&city=&zip=&soundslike=&sort=FACILITY_NAME";
+
+# download our health data.
+my $data = get($url) or die $!;
+die "No restaurants matched your search query.\n"
+    if $data =~ /no results were found/;
+ 
+# and suck in the returned matches.
+my $te = HTML::TableExtract->new(keep_html => 1, count => 1);
+$te->parse($data) or die $!; # yum, yum, i love second table!
+
+# and now loop through the data.
+foreach my $ts ($te->table_states) {
+  foreach my $row ($ts->rows) {
+     next if $row->[1] =~ /Site Address/; # skip if this is our header.
+     foreach ( qw/ 0 1 / ) { # remove googly poofs.
+        $row->[$_] =~ s/^\s+|\s+|\s+$/ /g; # remove whitespace.
+        $row->[$_] =~ s/\n|\f|\r/ /g; # remove newlines.
+     } 
+
+     # determine name/addresses.
+     my ($url, $name, $address, $mp_url); 
+     if ($row->[0] =~ /href="(.*?)">.*?2">(.*?)<\/font>/) {
+         ($url, $name) = ($1, $2); # almost there.
+     } if ($row->[1] =~ /2">(.*?)<\/font>/) { $address = $1; }
+
+     # and the MapQuest URL.
+     if ($address =~ /(.*), ([^,]*)/) {
+         my $street = $1; my $city = $2;
+         $mp_url = "http://www.mapquest.com/maps/map.adp?".
+                   "country=US&address=" . uri_escape($street) .
+                   "&city=" . $city . "&state=WA&zipcode=";
+     }
+
+     print "Company name: $name\n";
+     print "Company address: $address\n";
+     print "Results of past inspections:\n ".
+           "http://www.decadeonline.com/$url\n";
+     print "MapQuest URL: $mp_url\n\n";
+  }
+}

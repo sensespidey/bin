@@ -1,0 +1,99 @@
+#!/usr/bin/perl -w
+#
+# LeechM3U - save mp3s listed in an .m3u file, smartly.
+# Part of the Leecharoo suite - for all those hard to leech places.
+# http://disobey.com/d/code/ or contact morbus@disobey.com.
+#
+# This code is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+
+use strict; $|++;
+my $VERSION = "1.0";
+use File::Spec::Functions;
+
+# make sure we have the modules we need, else die peacefully.
+eval("use LWP 5.6.9;"); die "[err] LWP 5.6.9 or greater required.\n" if $@;
+eval("use URI::Escape;"); die "[err] URI::Escape is not installed.\n" if $@;
+
+my $dir = "mp3s";  # save downloads to...?
+mkdir $dir;        # make sure that dir exists.
+my $mp3_data;      # final holder of our MP3.
+my $total_size;    # total size of the MP3.
+
+# loop through each M3U file.
+foreach my $file (@ARGV) {
+
+    # open the passed M3U file or move onto the next.
+    open(URLS, "<$file") or print "[err] Could not open $file: $!\n";
+
+    # for each line.
+    while (<URLS>) {
+        next if /^#/;       # skip if it's a comment.
+        chomp;              # remove trailing newline.
+        my $url = $_;       # more semantic, yes?
+
+        # split the URL into parts, defined by the "/" delimiter
+        # in the URL. we'll use this to determine the name of
+        # the file, as well as its parent directory. in most
+        # cases, the parent directory is the album name.
+        my @parts = split(/\//, $url);
+
+        # properly encoded URLs are decimal encoded, with %20
+        # representing a space, etc. without conversion, our
+        # files would be named like that. we clean these up.
+        foreach (@parts) { $_ = uri_unescape($_); }
+
+        # take the second-to-last part, which is the parent
+        # directory of our file. we're assuming an album name.
+        my $album_dir = $parts[$#parts-1];
+
+        # create an OS-specific path to our album and file.
+        my $album_path = catdir($dir, $album_dir);
+        my $file_name = $parts[$#parts]; # prettier.
+        my $file_path = catfile($album_path, $file_name);
+        mkdir $album_path; # to prepare for dumping.
+
+        # get the size of the MP3 for our progress bar.
+        # some sites block Perl User-Agents, so we fakir.
+        print "Downloading \"$file_path\"...\n";
+        my $ua = LWP::UserAgent->new(agent => 'Mozilla/4.76 [en] (Win98; U)');
+        $total_size = $ua->head($url)->headers->content_length;
+
+        # only download the file if it hasn't been before.
+        if (-e $file_path and (stat($file_path))[7] == $total_size) {
+           print " Skipping - this file has already been downloaded.\n";
+           next;
+        }
+
+        # download the file with a callback for progress.
+        $ua->get($url, ':content_cb' => \&callback);
+
+        # with the data downloaded into $mp3_data with our
+        # callback, save that information to our $file_path.
+        # (note: bad grammar so word wrapping won't happen)
+        open (MP3, ">$file_path") or die "[err] Can't save: $!\n";
+        print MP3 $mp3_data; close(MP3); $mp3_data = undef;
+    }
+
+    # next file!
+    close(URLS);
+}
+
+# per chunk.
+sub callback {
+   my ($data, $response, $protocol) = @_;
+   $mp3_data .= $data; # append to existing data.
+   print progress_bar( length($mp3_data), $total_size, 25, '=' );
+}
+
+# wget-style. routine by tachyon
+# at http://tachyon.perlmonk.org/
+sub progress_bar {
+    my ( $got, $total, $width, $char ) = @_;
+    $width ||= 25; $char ||= '=';
+    my $num_width = length $total;
+    sprintf "|%-${width}s| Got %${num_width}s bytes of %s (%.2f%%)\r", 
+        $char x (($width-1)*$got/$total). '>', 
+        $got, $total, 100*$got/+$total;
+}

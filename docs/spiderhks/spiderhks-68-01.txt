@@ -1,0 +1,82 @@
+#!/usr/bin/perl -w
+use strict;
+use Getopt::Long;
+use LWP::Simple;
+my %opts; GetOptions(\%opts, 'v|verbose');
+
+# where we find URLs. we'll also use this
+# file to remember the number of comments.
+my $urls_file = "chkcomments.dat";
+
+# what follows is a list of regular expressions and assignment
+# code that will be executed in search of matches, per site.
+my @signatures = (
+   { regex  => qr/On (.*?), <a href="(.*?)">(.*?)<\/a> said/,
+     assign => '($date,$contact,$name) = ($1,$2,$3)'
+   },
+   { regex  => qr/&middot; (.*?) &middot; .*?<a href="(.*?)">(.*?)<\/a>/,
+     assign => '($date,$contact,$name) = ($1,$2,$3)'
+   },
+   { regex  => qr/(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})&nbsp;(.*)/,
+     assign => '($date,$name,$contact) = ($1,$2,"none")'
+   },
+);
+
+# open our URL file, and suck it in.
+open(URLS_FILE, "<$urls_file") or die $!;
+my %urls; while (<URLS_FILE>) { chomp;
+   my ($url, $count) = split(/\|%%\|/);
+   $urls{$url} = $count || undef;
+} close (URLS_FILE);
+
+# foreach URL in our dat file:
+foreach my $url (keys %urls) {
+
+   next unless $url; # no URL, no cookie.
+   my $old_count = $urls{$url} || undef;
+
+   # print a little happy message.
+   print "\nSearching $url...\n"; 
+
+   # suck down the data.
+   my $data = get($url) or next;
+
+   # now, begin looping through our matchers.
+   # for each regular expression and assignment
+   # code, we execute it in this namespace in an
+   # attempt to find matches in our loaded data.
+   my $new_count; foreach my $code (@signatures) {
+
+      # with our regular expression loaded,
+      # let's see if we get any matches.
+      while ($data =~ /$code->{regex}/gism) {
+
+         # since our $code contains two Perl statements
+         # (one being the regex, above, and the other
+         # being the assignment code), we have to eval
+         # it once more so the assignments kick in.
+         my ($date, $contact, $name); eval $code->{assign};
+         next unless ($date && $contact && $name);
+         print "  - $date: $name ($contact)\n" if $opts{v};
+         $new_count++; # increase the count.
+      }
+
+      # if we've gotten a comment count, then assume
+      # our regex worked properly, spit out a message,
+      # and assign our comment count for later storage.
+      if ($new_count) {
+         print " * We saw a total of $new_count comments".
+               " (old count: ". ($old_count || "unchecked") . ").\n";
+         if ($new_count > ($old_count || 0)) { # joy of joys!
+             print " * Woo! There are new comments to read!\n"
+         } $urls{$url} = $new_count; last; # end the loop.
+      }
+   }
+} print "\n";
+
+# now that our comment counts are updated,
+# write it back out to our datafile.
+open(URLS_FILE, ">$urls_file") or die $!;
+foreach my $url (keys %urls) {
+   print URLS_FILE "$url|%%|$urls{$url}\n";
+} close (URLS_FILE);

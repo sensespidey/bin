@@ -1,0 +1,110 @@
+#!/usr/bin/perl -w
+use strict;
+use Getopt::Long;
+use LWP::Simple;
+use HTML::TableExtract;
+my %opts;
+
+# our list of tvguide.com categories.
+my @search_categories = ( qw/ action+%26+adventure adult Movie
+                              comedy drama horror mystery+%26+suspense
+                              sci-fi+%26+paranormal western Sports
+                              Newscasts+%26+newsmagazines health+%26+fitness
+                              science+%26+technology education Children%27s
+                              talk+%26+discussion soap+opera
+                              shopping+%26+classifieds music / );
+
+# instructions for if the user doesn't
+# pass a search term or category. bah.
+sub show_usage {
+ print "You need to pass either a search term (--search)\n";
+ print "or use one of the category numbers below (--category):\n\n";
+ my $i=1; foreach my $cat (@search_categories) {
+    $cat =~ s/\+/ /g; $cat =~ s/%26/&/; $cat =~ s/%27/'/;
+    print "  $i) ", ucfirst($cat), "\n"; $i++;
+ } exit;
+}
+
+# define our command-line flags (long and short versions).
+GetOptions(\%opts, 'search|s=s',      # a search term.
+                   'category|c=s',    # a search category.
+); unless ($opts{search} || $opts{category}) { show_usage; }
+
+# create some variables for use at tvguide.com.
+my ($day, $month) = (localtime)[3..4]; $month++;
+my $start_time = "8:00";         # this time is in military format
+my $time_span  = 20;             # number of hours of TV listings you want
+my $start_date = "$month\/$day"; # set the current month and day
+my $service_id = 61058;          # our service id (see tvlisting readme)
+my $search_phrase = undef;       # final holder of what was searched for
+my $html_file = undef;           # the downloaded data from tvguide.com
+my $url = 'http://www.tvguide.com/listings/search/SearchResults.asp';
+
+# search by category.
+if ($opts{category}) {
+   my $id = $opts{category}; # convenience.
+   die "Search category must be a number!" unless $id =~ /\d+/;
+   die "Category ID was invalid" unless ($id >= 1 && $id <= 19);
+   $html_file = get("$url?l=$service_id&FormCategories=".
+                    "$search_categories[$id-1]");
+   die "get(  ) did not return as we expected.\n" unless $html_file;
+   $search_phrase = $search_categories[$id-1];
+}
+elsif ($opts{search}) { 
+   my $term = $opts{search}; # convenience.
+   $html_file = get("$url?I=$service_id&FormText=$term");
+   die "get(  ) did not return as we expected.\n" unless $html_file;
+   $search_phrase = $term;
+}
+
+# now begin printing out our matches.
+print "Search Results for '$search_phrase':\n\n";
+
+# create a new table extract object and pass it the
+# headers of the tvguide.com table in our data. 
+my $table_extract =
+   HTML::TableExtract->new(
+        headers => ["Date","Start Time", "Title", "Ch#"],
+            keep_html => 1 );
+$table_extract->parse($html_file);
+
+# now, with our extracted table, parse.
+foreach my $table ($table_extract->table_states) {
+    foreach my $cols ($table->rows) {
+
+        # this is not the best way to do this...
+        if(@$cols[0] =~ /Sorry your search found no matches/i)
+          { print "No matches to found for your search!\n"; exit; }
+
+        # get the date.
+        my $date = @$cols[0];
+        $date =~ s/<.*>//g;       $date =~ s/\s*//g;
+        $date =~ /(\w*)\D(\d*)/g; $date = "$1/$2";
+
+        # get the time.
+        my $time = @$cols[1];
+        $time =~ m/(\d*:\d*\s+\w+)/;
+        $time = $1;
+
+        # get the title, detail_url, detail_number, and station.
+        @$cols[2] =~ /href="(.*\('\d*','(\d*)','\d*','\d*','(.*)',.*)"/i;
+        my ($detail_url, $detail_num, $channel) = ($1, $2, $3);
+        my $title = @$cols[2]; $title =~ s/<.*>//g;
+        $title =~ /(\b(.*)\b)/g; $title = $1;
+
+        # get channel number
+        my $channel_num = @$cols[3];
+        $channel_num =~ m/>\s*(\d*)\s*</;
+        $channel_num = $1;
+
+        # turn the evil Javascript URL into a normal one.
+        $detail_url =~ /javascript:cu\('(\d+)','(\d+)'/;
+        my $iSvcId = $1; my $iTitleId = $2;
+        $detail_url = "http://www.tvguide.com/listings/".
+                      "closerlook.asp?I=$iSvcId&Q=$iTitleId";
+
+        # now, print the results.
+        print " $date at $time on chan$channel_num ($channel): $title\n";
+        print "    $detail_url\n\n";
+    }
+}

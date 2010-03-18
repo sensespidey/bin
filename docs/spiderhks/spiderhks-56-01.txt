@@ -1,0 +1,73 @@
+#!/usr/bin/perl  -w
+# get_recommendations.pl
+#
+# A script to log on to Amazon, retrieve
+# recommendations, and sort by highest rating.
+# Usage: perl get_recommendations.pl
+
+use strict;
+use HTTP::Cookies;
+use LWP::UserAgent;
+
+# Amazon email and password.
+my $email = 'insert email address';
+my $password = 'insert password';
+
+# Amazon login URL for normal users.
+my $logurl = "http://www.amazon.com/exec/obidos/flex-sign-in-done/";
+
+# Now log into Amazon.
+my $ua = LWP::UserAgent->new;
+$ua->agent("(compatible; MSIE 4.01; MSN 2.5; AOL 4.0; Windows 98)");
+$ua->cookie_jar( HTTP::Cookies->new('file' => 'cookies.lwp','autosave' => 1));
+my %headers = ( 'content-type' => "application/x-www-form-urlencoded" );
+$ua->post($logurl, 
+  [ email       => $email,
+    password    => $password,
+    method      => 'get', opt => 'oa',
+    page        => 'recs/instant-recs-sign-in-standard.html',
+    response    => "tg/recs/recs-post-login-dispatch/-/recs/pd_rw_gw_r",
+    'next-page' => 'recs/instant-recs-register-standard.html',
+    action      => 'sign-in checked' ], %headers);
+
+# Set some variables to hold
+# our sorted recommendations.
+my (%title_list, %author_list);
+my (@asins, @ratings, $done);
+
+# We're logged in, so request the recommendations.
+my $recurl = "http://www.amazon.com/exec/obidos/tg/". 
+             "stores/recs/instant-recs/-/books/0/t";
+
+# Set all Amazon recommendations in
+# an array/title and author in hashes.
+until ($done) {
+
+     # Send the request for the recommendations.
+     my $content = $ua->get($recurl)->content;
+
+     # Loop through the HTML, looking for matches.
+     while ($content =~ m!<td colspan=2 width=100%>.*?detail/-/(.*?)/ref.*?<b>(.*?)</b>.*?by (.*?)\n.*?Average Customer Review&#58;.*?(.*?)out of 5 stars.*?<td colspan=3><hr noshade size=1></td>!mgis) {
+         my ($asin,$title,$author,$rating) = ($1||'',$2||'',$3||'',$4||'');
+         $title  =~ s!<.+?>!!g; # drop all HTML tags, cheaply.
+         $rating =~ s!\n!!g;    # remove newlines from the rating.
+         $rating =~ s! !!g;     # remove spaces from the rating.
+         $title_list{$asin} = $title;    # store the title.
+         $author_list{$asin} = $author;  # and the author.
+         push (@asins, $asin);           # and the ASINs.
+         push (@ratings, $rating);       # and the ... OK!
+     }
+
+     # See if there are more results. If so, continue the loop.
+     if ($content =~ m!<a href=(.*?instant-recs.*?)>more results.*?</a>!i) {
+        $recurl = "http://www.amazon.com$1"; # reassign the URL.
+     } else { $done = 1; } # nope, we're done.
+}
+
+# Sort the results by highest star rating and print!
+for (sort { $ratings[$b] <=> $ratings[$a] } 0..$#ratings) {
+    next unless $asins[$_]; # skip el blancos.
+    print "$title_list{$asins[$_]}  ($asins[$_])\n" . 
+          "by $author_list{$asins[$_]} \n" .
+          "$ratings[$_] stars.\n\n";
+}

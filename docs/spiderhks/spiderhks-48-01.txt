@@ -1,0 +1,65 @@
+#!/usr/bin/perl -w
+#
+# Scattersearch -- Use the search suggestions from
+# Yahoo! to build a series of intitle: searches at Google. 
+
+use strict;
+
+use LWP;
+use SOAP::Lite;
+use CGI qw/:standard/;
+
+# get our query, else die miserably.
+my $query = shift @ARGV; die unless $query;
+
+# Your Google API developer's key.
+my $google_key = 'insert key here';
+
+# Location of the GoogleSearch WSDL file.
+my $google_wdsl = "./GoogleSearch.wsdl";
+
+# search Yahoo! for the query.
+my $ua  = LWP::UserAgent->new;
+my $url = URI->new('http://search.yahoo.com/search');
+$url->query_form(rs => "more", p => $query);
+my $yahoosearch = $ua->get($url)->content;
+$yahoosearch =~ s/[\f\t\n\r]//isg;
+
+# and determine if there were any results.
+$yahoosearch =~ m!Related:(.*?)<spacer!migs; 
+die "Sorry, there were no results!\n" unless $1;
+my $recommended = $1;
+
+# now, add all our results into
+# an array for Google processing.
+my @googlequeries;
+while ($recommended =~ m!<a href=".*?">(.*?)</a>!mgis) {
+    my $searchitem = $1; $searchitem =~ s/nobr|<|>|\///g;
+    push (@googlequeries, $searchitem); 
+}
+
+# print our header for the results page.
+print join "\n",
+start_html("ScatterSearch");
+     h1("Your Scattersearch Results"),
+     p("Your original search term was '$query'"),
+     p("That search had " . scalar(@googlequeries). " recommended terms."),
+     p("Here are result numbers from a Google search"),
+     CGI::start_ol(  );
+
+# create our Google object for API searches.
+my $gsrch = SOAP::Lite->service("file:$google_wdsl");
+
+# running the actual Google queries.
+foreach my $googlesearch (@googlequeries) {
+    my $titlesearch = "allintitle:$googlesearch"; 
+    my $count = $gsrch->doGoogleSearch($google_key, $titlesearch,
+                                       0, 1, "false", "",  "false",
+                                       "", "", "");
+    my $url = $googlesearch; $url =~ s/ /+/g; $url =~ s/\"/%22/g;
+    print li("There were $count->{estimatedTotalResultsCount} ".
+             "results for the recommended search <a href=\"http://www.".
+             "google.com/search?q=$url&num=100\">$googlesearch</a>");
+}
+
+print CGI::end_ol(  ), end_html;

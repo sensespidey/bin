@@ -1,0 +1,54 @@
+#!/usr/bin/perl -w
+#
+# AudioScrobble - Finds artists similar to those you already like.
+# Comments, suggestions, contempt? Email adam@bregenzer.net.
+#
+# This code is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+
+use strict; $|++;
+my $VERSION = "1.0";
+
+# make sure we have the modules we need, else die peacefully.
+eval("use LWP 5.6.9;"); die "[err] LWP 5.6.9 or greater required.\n" if $@;
+
+# base URL for all requests
+my $base_url = "http://www.audioscrobbler.com/modules.php?".
+               "op=modload&name=top10&file=scrobblersets";
+
+my $counter = 0;         # counter of artists displayed
+my $max_count = 10;      # maximum number of artists to display
+my ($a1, $a2, $a3) = ''; # artist input variables
+
+# Reminder: this code checks for arguments, therefore if a band
+# name has multiple words make sure you put it in quotes.
+# Also, Audioscrobbler accepts at most three band names so we
+# will only look at the first three arguments.
+$a1 = $ARGV[0] || die "No artists passed!\n";
+$a2 = $ARGV[1] || ""; $a3 = $ARGV[2] || "";
+
+# create a downloader, faking the User-Agent to get past filters.
+print "Retrieving data for your matches... ";
+my $ua = LWP::UserAgent->new(agent => 'Mozilla/4.76 [en] (Win98; U)');
+my $data = $ua->get("$base_url&a1=$a1&a2=$a2&a3=$a3")->content;
+print "done.\n";
+
+# print up a nice header.
+print "Correlation\tArtist\n";
+print "-" x 76, "\n";
+
+# match on the URL before the artist's name through to
+# the width of the bar image (to determine correlation).
+while ($counter < $max_count && $data =~ /href="modules\.php\?op=modload&name=top10&file=artistinfo&artist=[^"]+">([^<]+)<\/a>[^<]+<\/td><td[^>]+><img[^>]+\/><img[^>]+width="([0-9]+)">(.*)/) {
+
+    # print the correlation factor and the artist's name.
+    printf "%1.2f", ($2 / 300); print "\t\t" . $1 . "\n";
+
+    # continue with the
+    # data that is left.
+    $data = $3; $counter++;
+}
+
+if ($counter == 0) {print "No matches.\n";}
+print "-" x 76, "\n";

@@ -1,0 +1,62 @@
+#!/usr/bin/perl -w
+#
+# Progress Bar: Term::ProgressBar - progress bar with LWP.
+# http://disobey.com/d/code/ or contact morbus@disobey.com.
+# Original routine by tachyon at http://tachyon.perlmonk.org/
+#
+# This code is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+
+use strict; $|++;
+my $VERSION = "1.0";
+
+# make sure we have the modules we need, else die peacefully.
+eval("use LWP 5.6.9;"); 
+die "[err] LWP is not the required version.\n" if $@;
+eval("use Term::ProgressBar;"); # prevent word-wrapping.
+die "[err] Term::ProgressBar not installed.\n" if $@;
+
+# now, check for passed URLs for downloading.
+die "[err] No URLs were passed for processing.\n" unless @ARGV;
+
+# happy golucky variables.
+my $final_data = 0;  # our downloaded data.
+my $total_size;      # total size of the URL.
+my $progress;        # progress bar object.
+my $next_update = 0; # reduce ProgressBar use.
+
+# loop through each URL.
+foreach my $url (@ARGV) {
+   print "Downloading URL at ", substr($url, 0, 40), "...\n";
+
+   # create a new useragent and download the actual URL.
+   # all the data gets thrown into $final_data, which
+   # the callback subroutine appends to. before that,
+   # though, get the total size of the URL in question.
+   my $ua = LWP::UserAgent->new(  );
+   my $result = $ua->head($url);
+   my $remote_headers = $result->headers;
+   $total_size = $remote_headers->content_length;
+
+   # initialize our progress bar.
+   $progress = Term::ProgressBar->new({count => $total_size, ETA => 'linear'});
+   $progress->minor(0);           # turns off the floating asterisks.
+   $progress->max_update_rate(1); # only relevant when ETA is used.
+
+   # now do the downloading.
+   my $response = $ua->get($url, ':content_cb' => \&callback );
+
+   # top off the progress bar.
+   $progress->update($total_size);
+}
+
+# per chunk.
+sub callback {
+   my ($data, $response, $protocol) = @_;
+   $final_data .= $data;
+
+   # reduce usage, as per example 3 in POD.
+   $next_update = $progress->update(length($final_data))
+      if length($final_data) >= $next_update;
+}

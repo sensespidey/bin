@@ -1,0 +1,32 @@
+#!/usr/bin/perl -w
+
+# Example alltheweb searching plug-in
+#
+# This file is distributed under the same licence as Perl itself.
+#
+# by rik - ora@rikrose.net
+
+use strict;
+use LWP::UserAgent;
+use HTML::TokeParser;
+
+# create the URL from our incoming query.
+my $url = "http://www.alltheweb.com/search?cat=web&cs=iso-8859-1" .
+          "&q=" . (join "+", @ARGV) . "&_sb_lang=en";
+
+print $url;
+# download the data.
+my $ua = LWP::UserAgent->new(  );
+$ua->agent('Mozilla/5.0');
+my $response = $ua->get($url);
+die $response->status_line . "\n"
+  unless $response->is_success;
+
+my $stream = HTML::TokeParser->new (\$response->content) or die "\n";
+while (my $tag = $stream->get_tag("p")){
+    $tag = $stream->get_tag("a");
+    my $name = $stream->get_trimmed_text("/a");
+    last if $name eq "last 10 queries";
+    my $url = $tag->[1]{href};
+    print "$url\t$name\n";
+}

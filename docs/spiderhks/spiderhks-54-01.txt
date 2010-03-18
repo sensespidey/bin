@@ -1,0 +1,42 @@
+#!/usr/bin/perl -w
+# get_advice.pl
+#
+# A script to scrape Amazon to retrieve customer buying advice
+# Usage: perl get_advice.pl <asin>
+use strict; use LWP::Simple;
+
+# Take the ASIN from the command line.
+my $asin = shift @ARGV or die "Usage: perl get_advice.pl <asin>\n";
+
+# Assemble the URL from the passed ASIN.
+my $url = "http://amazon.com/o/tg/detail/-/$asin/?vi=advice";
+
+# Set up unescape-HTML rules. Quicker than URI::Escape.
+my %unescape = ('&quot;'=>'"', '&amp;'=>'&', '&nbsp;'=>' ');
+my $unescape_re = join '|' => keys %unescape;
+
+# Request the URL.
+my $content = get($url);
+die "Could not retrieve $url" unless $content;
+
+# Get our matching data.
+my ($inAddition) = (join '', $content) =~ m!in addition to(.*?)(instead of)?</td></tr>!mis;
+my ($instead)    = (join '', $content) =~ m!recommendations instead of(.*?)</table>!mis;
+
+# Look for "in addition to" advice.
+if ($inAddition) { print "-- In Addition To --\n\n";
+   while ($inAddition =~ m!<td width=10>(.*?)</td>\n<td width=90%>.*?ASIN/(.*?)/.*?">(.*?)</a>.*?</td>.*?<td width=10% align=center>(.*?)</td>!mgis) {
+       my ($place,$thisAsin,$title,$number) = ($1||'',$2||'',$3||'',$4||'');
+       $title =~ s/($unescape_re)/$unescape{$1}/migs; #unescape HTML 
+       print "$place $title ($thisAsin)\n(Recommendations: $number)\n\n";
+   }
+}
+
+# Look for "instead of" advice.
+if ($instead) { print "-- Instead Of --\n\n";
+    while ($instead =~ m!<td width=10>(.*?)</td>\n<td width=90%>.*?ASIN/(.*?)/.*?">(.*?)</a>.*?</td>.*?<td width=10% align=center>(.*?)</td>!mgis) {
+        my ($place,$thisAsin,$title,$number) = ($1||'',$2||'',$3||'',$4||'');
+        $title =~ s/($unescape_re)/$unescape{$1}/migs; #unescape HTML 
+        print "$place $title ($thisAsin)\n(Recommendations: $number)\n\n";
+    }
+}

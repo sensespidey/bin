@@ -1,0 +1,105 @@
+#!/usr/bin/perl -w
+# -----------------------------------------------------------------------
+# copyright Dean Peters © 2003 - all rights reserved
+# http://www.HealYourChurchWebSite.org
+# -----------------------------------------------------------------------
+#
+# getap.pl is free software. You can redistribute and modify it
+# freely without any consent of the developer, Dean Peters, if and
+# only if the following conditions are met:
+#
+# (a) The copyright info and links in the headers remains intact.
+# (b) The purpose of distribution or modification is non-commercial.
+#
+# Commercial distribution of this product without a written
+# permission from Dean Peters is strictly prohibited.
+# This script is provided on an as-is basis, without any warranty.
+# The author does not take any responsibility for any damage or
+# loss of data that may occur from use of this script.
+#
+# You may refer to our general terms & conditions for clarification:
+# http://www.healyourchurchwebsite.com/archives/000002.shtml 
+# 
+# For more info. about this code, please refer to the following article:
+# http://www.healyourchurchwebsite.com/archives/000760.shtml
+#
+# combine this code with crontab for best results, e.g.:
+# 59 * * * * /path/to/scriptname.pl > /dev/null
+#
+# -----------------------------------------------------------------------
+
+use XML::RSS;
+use LWP::Simple;
+
+# get content from feed -- using 10 attempts.
+# replace the URL with whatever feed you want to get. 
+my $content = getFeed("http://www.goupstate.com/apps/pbcs.dll/".
+                       "section?Category=RSS04&mime=xml", 10);
+
+# save off feed to a file -- make sure you
+# have write access to file or directory.
+saveFeed($content, "newsfeed.xml");
+
+# create customized output.
+my $output = createOutput($content, 8);
+
+# save it to your include file.
+saveFeed($output, "newsfeed.inc.php");
+
+# download the feed in question.
+# accepts two inputs, the URL, and
+# the number of times you wish to loop.
+sub getFeed {
+    my ($url, $attempts) = @_;
+    my $lc = 0; # loop count
+    my $content;
+    while($lc < $attempts) {
+        $content = get($url);
+        return $content if $content;
+        $lc += 1; sleep 5;
+    }
+
+    die "Could not retreive data from $url in $attempts attempts";
+}
+
+# saves the converted data ($content)
+# to final destination ($outfile).
+sub saveFeed {
+    my ($content, $outfile) = @_;
+    open(OUT,">$outfile") || die("Cannot Open File $outfile");
+    print OUT $content; close(OUT);
+}
+
+# parses the XML file and returns
+# a string of custom content. You
+# can pass the number of items you'd
+# like as the second argument.
+sub createOutput {
+    my ($content, $feedcount) = @_;
+
+    # new instance of XML::RSS
+    my $rss = XML::RSS->new;
+
+    # parse the RSS content into an output
+    # string to be saved at end of parsing.
+    $rss->parse($content);
+    my $title = $rss->{channel}->{title};
+    my $output  = '<div class="title">GoUpstate/AP NewsWire</div>';
+       $output .= '<div class="newsfeed">\n';
+
+    my $i = 0; # begin our item loop.
+    foreach my $item (@{$rss->{items}}) {
+        next unless defined($item->{title}) && defined($item->{link});
+        $i += 1; next if $i > $feedcount; # skip if we're done.
+        $output .= "<a href=\"$item->{link}\">$item->{title}</a><br />\n";
+    }
+
+    # if a copyright and link exists, then post it.
+    my $copyright = $rss->{channel}->{copyright};
+    my $link = $rss->{channel}->{link};
+    my $description = $rss->{channel}->{description};
+    $output .= "<a href=\"$link\" title=\"$description\" >".
+               "$copyright</a>\n" if($copyright && $link);
+    $output .= "</div>";
+    return $output;
+}

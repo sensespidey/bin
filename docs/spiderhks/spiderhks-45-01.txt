@@ -1,0 +1,56 @@
+#!/usr/bin/perl -w
+# ybgoogled.pl
+# Pull the top item from the Yahoo Buzz Index and query
+# the last three day's worth of Google's index for it.
+# Usage: perl ybgoogled.pl
+use strict;
+use SOAP::Lite;
+use LWP::Simple;
+use Time::JulianDay;
+
+# Your Google API developer's key.
+my $google_key='insert key here';
+
+# Location of the GoogleSearch WSDL file.
+my $google_wdsl = "./GoogleSearch.wsdl";
+
+# Number of days back to
+# go in the Google index.
+my $days_back = 3;
+
+# Grab a copy of http://buzz.yahoo.com.
+my $buzz_content = get("http://buzz.yahoo.com/overall/") 
+  or die "Couldn't grab the Yahoo Buzz: $!";
+
+# Find the first item on the Buzz Index list.
+$buzz_content =~ m!<b>1</b>.*?&cs=bz"><b>(.*?)</b></a>&nbsp;</font>!;
+my $buzziest = $1; # assign our match as our search term.
+die "Couldn't figure out the Yahoo! buzz\n" unless $buzziest;
+
+# Figure out today's Julian date.
+my $today = int local_julian_day(time);
+
+# Build the Google query and say hi.
+my $query = "\"$buzziest\" daterange:" . ($today - $days_back) . "-$today"; 
+print "The buzziest item on Yahoo Buzz today is: $buzziest\n",
+      "Querying Google for: $query\n", "Results:\n\n";
+
+# Create a new SOAP::Lite instance, feeding it GoogleSearch.wsdl.
+my $google_search = SOAP::Lite->service("file:$google_wdsl");
+
+# Query Google.
+my $results = $google_search->doGoogleSearch( 
+                  $google_key, $query, 0, 10, "false",
+                  "",  "false", "", "", ""
+              );
+
+# No results?
+die "No results" unless @{$results->{resultElements}};
+
+# Loop through the results.
+foreach my $result (@{$results->{'resultElements'}}) {
+    my $output = join "\n", $result->{title} || "no title",
+                 $result->{URL}, $result->{snippet} || 'none',"\n";
+    $output =~ s!<.+?>!!g; # drop all HTML tags sloppily.
+    print $output; # woo, we're done!
+}

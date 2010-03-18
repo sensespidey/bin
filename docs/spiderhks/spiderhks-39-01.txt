@@ -1,0 +1,60 @@
+#!/usr/bin/perl -w
+use strict; 
+use LWP::UserAgent; 
+use XML::RSS;
+use URI;
+
+# how many RSS items?
+my $counterlimit = 10;
+
+# prefix for image URLs?
+# could be file:// or http://.
+my $url_prefix = "file:///Users/morbus/Desktop/";
+
+# get our query, else die miserably.
+my $query = shift @ARGV; die unless $query;
+
+# and grab our data.
+my $ua  = LWP::UserAgent->new;
+my $url = URI->new('http://search.news.yahoo.com/search/news/');
+$url->query_form(c => "news_photos", p => $query);
+my $photosource = $ua->get($url)->content;
+
+# if there was no luvin', then no RSS feed.
+die "There were no results for this search!\n"
+  if $photosource =~ /Sorry, no News Photos Matches/i;
+
+# start the RSS feed.
+my $rss = new XML::RSS (version => '0.91');
+$rss->channel(
+    'link'       => $url_prefix,
+     title        => "Yahoo! News Photos Wallpaper",
+     description  => "News photos matching the keyword '$query'."
+);
+
+# our counter.
+my $counter = 0;
+
+# get the pictures and descriptions
+while ($photosource =~ m!hr width=90%.*?<a href="(.*?)"><img src=(.*?) .*?size=2>(.*?)</font>.*?=timedate>.*?</span>!mgis) {
+    last if $counter == $counterlimit; # reached our limit? move on.
+    my ($url, $pictureurl, $desc) = ($1, $2, $3);
+    unless ($url && $pictureurl && $desc) { next; }
+
+    # download this picture to the current directory.
+    $ua->get($pictureurl, ':content_file' => "picture$counter.jpg");
+
+    # add this item
+    # to our RSS feed.
+    $rss->add_item(
+       title       => substr($desc, 0, 75) . "...", 'link' => $url,
+       description => "<img # src=\"${url_prefix}picture${counter}.jpg\"> [RETURN] 
+$desc",
+    );
+
+    # NexxTXTt!
+    $counter++;
+}
+
+# and save our RSS.
+$rss->save("wallpaper.rdf");

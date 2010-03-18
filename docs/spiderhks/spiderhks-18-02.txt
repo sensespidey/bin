@@ -1,0 +1,57 @@
+#!/usr/bin/perl -w
+#
+# Progress Bar: Wget - Wget style progress bar with LWP.
+# http://disobey.com/d/code/ or contact morbus@disobey.com.
+# Original routine by tachyon at http://tachyon.perlmonk.org/
+#
+# This code is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+
+use strict; $|++;
+my $VERSION = "1.0";
+
+# make sure we have the modules we need, else die peacefully.
+eval("use LWP 5.6.9;");  die "[err] LWP 5.6.9 or greater required.\n" if $@;
+
+# now, check for passed URLs for downloading.
+die "[err] No URLs were passed for processing.\n" unless @ARGV;
+
+# happy golucky variables.
+my $final_data;  # our downloaded data.
+my $total_size;  # total size of the URL.
+
+# loop through each URL.
+foreach my $url (@ARGV) {
+   print "Downloading URL at ", substr($url, 0, 40), "...\n";
+
+   # create a new useragent and download the actual URL.
+   # all the data gets thrown into $final_data, which
+   # the callback subroutine appends to. before that,
+   # though, get the total size of the URL in question.
+   my $ua = LWP::UserAgent->new(  );
+   my $result = $ua->head($url);
+   my $remote_headers = $result->headers;
+   $total_size = $remote_headers->content_length;
+
+   # now do the downloading.
+   my $response = $ua->get($url, ':content_cb' => \&callback );
+}
+
+# per chunk.
+sub callback {
+   my ($data, $response, $protocol) = @_;
+   $final_data .= $data;
+   print progress_bar( length($final_data), $total_size, 25, '=' );
+}
+
+# wget-style. routine by tachyon
+# at http://tachyon.perlmonk.org/
+sub progress_bar {
+    my ( $got, $total, $width, $char ) = @_;
+    $width ||= 25; $char ||= '=';
+    my $num_width = length $total;
+    sprintf "|%-${width}s| Got %${num_width}s bytes of %s (%.2f%%)\r", 
+        $char x (($width-1)*$got/$total). '>', 
+        $got, $total, 100*$got/+$total;
+}

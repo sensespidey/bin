@@ -1,0 +1,31 @@
+#!/usr/bin/perl -w
+#
+# grabrank.pl
+#
+# This code is free software; you can redistribute it and/or
+# modify it under the same terms as perl
+#
+
+use strict;
+use LWP::Simple;
+my $time=time(  );
+
+# path to our local RRDTOOL.
+my $rrd = '/usr/local/bin/rrdtool';
+
+# Get the Amazon.com page for Mac OS X Hacks
+my $data = get("http://www.amazon.com/exec/obidos/ASIN/0596004605/");
+$data =~ /Amazon.com Sales Rank: <\/b> (.*) <\/span><br>/;
+my $salesrank=$1; # and now the sales rank is ours! Muahh!
+
+# Get rid of commas.
+$salesrank =~ s/,//g;
+
+# Update our rrdtool database.
+`$rrd update salesrank.rrd $time:$salesrank`;
+
+# Update our graph.
+my $cmd= "$rrd graph osxhacks.png --imgformat PNG --units-exponent ".
+         "0 DEF:myrank=salesrank.rrd:rank:AVERAGE LINE1:myrank#FF0000:".
+         "'Mac OS X Hacks' --start ".($time-31*86400)." --end $time";
+`$cmd`; # bazam! we're done.

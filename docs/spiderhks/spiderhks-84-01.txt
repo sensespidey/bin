@@ -1,0 +1,58 @@
+/* include the scraping functions script:  */
+include( "scrape_func.php" ); 
+
+/* Next, we'll get the raw source code of
+   the page using our getURL(  ) function:  */
+$_rawData = getURL( "http://www.techdeals.net/" ); 
+
+/* And clean up the raw source for easier parsing:  */
+$_rawData = cleanString( $_rawData ); 
+
+/* The next step is a little more complex. Because we've already
+   looked at the HTML source, we know that the items start and
+   end with two particular strings. We'll use these strings to
+   get the main data portion of the page:*/
+$_rawData = getBlock( "<div class=\"NewsHeader\">",
+                      "</div> <div id=\"MenuContainer\">", $_rawData ); 
+
+/* We now have the particular data that we want to parse into
+   an itemized list. We do that by breaking the code into an
+   array so we can loop through each item: */
+$_rawData = explode( "<div class=\"NewsHeader\">", $_rawData ); 
+
+/* While iterating through each value, we 
+   parse out the individual item portions:  /*
+foreach( $_rawData as $_rawBlock ) {
+   $_item = array(  );
+   $_rawBlock = trim( $_rawBlock );
+   if( strlen( $_rawBlock ) > 0 ) {
+
+      /*   The title of the item can be found in <h2> ... </h2> tags   */
+      $_item[ "title" ] = strip_tags( getElement( "h2", $_rawBlock ) );
+
+      /*   The link URL can is found between
+           http://www.techdeals.net/rd/go.php?id= and "   */
+      $_item[ "link" ] = getBlock( "http://www.techdeals.net/rd/go.php?id=",
+                                   chr(34), $_rawBlock );
+
+      /*   Posting info is in <span> ... </span> tags   */
+      $_item[ "post" ] = strip_tags( getElement( "span", $_rawBlock ) );
+
+      /*   The description is found between an </div> and a <img tag   */
+      $_item[ "desc" ] = cleanString( strip_tags( getBlock( "</div>",
+                                      "<img", $_rawBlock ) ) );
+
+      /*   Some descriptions are slightly different,
+           so we need to clean them up a bit   */
+      if( strpos( $_item[ "desc" ], "Click here for the techdeal", 0 ) > 0 ) {
+         $_marker = strpos( $_item[ "desc" ], "Click here for the techdeal", 0 );
+         $_item[ "desc" ] = trim( substr( $_item[ "desc" ], 0, $_marker ) );
+      }
+
+      /*   Print out the scraped data   */
+      print( implode( chr(10), $_item ) . chr(10) . chr(10) );
+
+      /*   Save the data as a string (used in the mail example below)   */
+      $_text .= implode( chr(10), $_item ) . chr(10) . chr(10);
+   }
+}
