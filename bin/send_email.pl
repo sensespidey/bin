@@ -2,8 +2,8 @@
 
 use Mail::Mailer;
 
-my $msgfile = "/Users/spiderman/tmp/silc-rebuild3.txt";
-my $addrfile = "/Users/spiderman/tmp/silc-addresses.txt";
+my $msgfile = "~/txt/message.txt";
+my $addrfile = "~/txt/addresses.txt";
 
 die "couldn't open message file" unless open(MSG,$msgfile);
 
@@ -18,8 +18,8 @@ while (<ADDR>) {
 
 $mailer = Mail::Mailer->new("sendmail");
 $mailer->open( { 	To      => $_,
-	        	From    => 'derek@anarres.ca',
-	     		Subject => 'silc.anarres.ca will be OFFLINE briefly :(',
+	        	From    => 'me@mydomain.ca',
+	     		Subject => 'Subject',
 		})
    or die "Can't open: $!\n";
 
