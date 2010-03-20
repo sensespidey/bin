@@ -1428,7 +1428,7 @@ $VAR1 = {
                       'ISO3' => 'FJI'
                     }
         };
-Opening /Users/spiderman/anarres/projects/SCW/country.txt..done.
+Opening country.txt..done.
 Couldn't find Azores (014) in table.
 Couldn't find Corsica (044) in table.
 Couldn't find Kampuchea (097) in table.
