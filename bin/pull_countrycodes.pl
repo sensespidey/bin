@@ -12,7 +12,7 @@ my $RUN_STATE = shift(@ARGV);
 # the base URL of the site we are scraping and
 # the URL of the page where the bugtraq list is located.
 my $url = "http://www.unc.edu/~rowlett/units/codes/country.htm";
-my $file = "/Users/spiderman/anarres/projects/SCW/country.txt";
+my $file = "/~/txt/country.txt";
 
 # get our data.
 my $html_file = get($url) or die "$!\n";
