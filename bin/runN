@@ -29,3 +29,14 @@ sub spawn {
   exec @_;
   die "exec: $!";
 }
+
+sub usage {
+  print STDERR "Usage: $0 [-n N] [-r] [-v] command arg1 arg2...
+Run command arg1, command arg2, etc., concurrently.
+Run no more than N processes simultaneously (default 1)
+    -r: run commands in random order instead of specified order (unimpl.)
+    -v: verbose mode
+";
+  exit 1;
+}
+
