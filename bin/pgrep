@@ -9,28 +9,28 @@ getopts($opts) or usage();
 my $pat = defined($opt_e) ? $opt_e : @ARGV ? shift : usage();
 my $qr = $opt_i ? qr/$pat/i : qr/$pat/;
 
-$| = 1 if $opt_u;
-
 my $format;
 
 if (defined $opt_F) {
-$format = $opt_F . "\n";
+  $format = $opt_F . "\n";
 } else {
-  my %format = ( l => '%s'."\n",
-		 h => '%2$s'."\n",
-		 q => "",
-		 "" => $opt_I || @ARGV > 1 ? "%s: %s\n" : '%2$s'."\n",
-	       );
+  my %format = (l => '%s'."\n",
+                h => '%2$s'."\n",
+                q => "",
+                "" => $opt_I || @ARGV > 1 ? "%s: %s\n" : '%2$s'."\n",
+               );
   my $fk = "";
   $fk .= 'l' if $opt_l;
   $fk .= 'h' if $opt_h;
   $fk .= 'q' if $opt_q;
   $format = $format{$fk};
   unless (defined $format) {
-   warn "Incompatible options.\n";
-   usage();
+    warn "Incompatible options.\n";
+    usage();
   }
 }
+
+$| = 1 if $opt_u;
 
 $rc = 1;  # No matches;
 
@@ -56,6 +56,7 @@ sub do_file {
       return;
     }
   }
+
   while (<$fh>) {
     chomp;
     if (/$qr/ ^ $opt_v) {
@@ -65,3 +66,22 @@ sub do_file {
     }
   }
 }
+
+sub usage {
+  print STDERR <<EOM;
+ Usage: $0 [$opts] pattern files...
+
+    -F format    printf-style output format 
+                 (%1\$s = filename, %2\$s = text, %3\$d = line number)
+    -e pattern   specify pattern
+    -h           omit filenames
+    -i           case-insensitive match
+    -I           list of files on STDIN instead of in ARGV
+    -l           print filenames only
+    -q           print nothing
+    -u           make output unbuffered
+    -v           invert matching
+EOM
+  exit 2;
+}
+
