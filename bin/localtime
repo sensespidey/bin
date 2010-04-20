@@ -1,0 +1,21 @@
+#!/usr/bin/perl
+
+# Script from http://perl.plover.com/classes/mybin/samples/slide019.html
+# Converts a unixtimestamp (or linestream thereof) to human-readable formats
+
+if (@ARGV) {
+  for (@ARGV) {
+    print show_localtime($_), "\n";
+  }
+} else {
+  while (<>) {
+    s/^(\d+)/show_localtime($1)/e;
+    print;
+  }
+}
+
+sub show_localtime {
+  my $t = shift;
+  scalar localtime $t;
+}
+

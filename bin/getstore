@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+
+use LWP::Simple 'getstore';
+use HTTP::Status ();
+
+my $url = shift or die "Usage: $0 url [file]\n";
+my $file = shift;
+
+unless (defined $file) {
+  require File::Basename;
+  $file = File::Basename::basename($url);
+  $file = "DEFAULT" unless defined $file;
+}
+
+unless (HTTP::Status::is_success(my $rc = getstore($url, $file))) {
+  print HTTP::Status::status_message($rc), "\n";
+  exit 1;
+}
+

@@ -1,0 +1,5 @@
+#!/usr/bin/perl
+# http://perl.plover.com/classes/mybin/samples/slide013.html
+# count number of occurrences of each line in the input
+system("sort @ARGV | uniq -c | sort -n");
+

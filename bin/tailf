@@ -1,0 +1,16 @@
+#!/usr/bin/perl
+
+# Equivalent to tail -f for cases where -f doesn't work (OSX?)
+# http://perl.plover.com/classes/mybin/samples/slide022.html
+
+my $file = shift or die "Usage: $0 filename\n";
+open my($fh), "<", $file or die "$file: $!\n";
+
+while (1) {
+  while (<$fh>) {
+    print;
+  }
+  sleep 1;
+  seek $fh, 0, 1 or die "seek: $!";
+}
+

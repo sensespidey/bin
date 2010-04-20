@@ -1,0 +1,32 @@
+#!/usr/bin/perl
+
+# tail -f current wil stop after 24 hours
+# ftail current will notice when current is renamed, and start scanning the new file
+# http://perl.plover.com/classes/mybin/samples/slide029.html
+
+$| = 1;
+if ($ARGV[0] eq '-e') { shift; $END++ } 
+my $file = shift; # Grab the filename from the cmdline
+my $devino = "";  # This will contain the dev/inode unique pair for the file
+
+while (1) {
+  my ($dev, $ino) = stat $file;			 # Check the dev/inode
+  if (defined $dev && "$dev,$ino" ne $devino) {  # If it's changed, the file was rotated
+    while (read F, my($buf), 8192) {		 # Print the last of the old file...
+      print $buf;
+    }
+
+    # .. and open the new one:
+    open F, "<", $file or die "Couldn't open file $file: $!; aborting";
+
+    $devino = "$dev,$ino";  # Set the new dev/ino for the new file 
+    seek F, 0, 2 if $END;   
+    $END=0;
+  }
+
+  while (read F, my($buf), 8192) {
+    print $buf;
+  }
+  sleep 1;
+  seek F, 0, 1;
+}
