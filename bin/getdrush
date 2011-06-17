@@ -4,13 +4,12 @@
 
 # For now, the url is hardcoded
 RETURN=`pwd`
-DRUSH_URL=http://ftp.drupal.org/files/projects/drush-6.x-3.3.tar.gz
-DRUSH_TGZ=drush-6.x-3.3.tar.gz
-DRUSH_MAKE_URL=http://ftp.drupal.org/files/projects/drush_make-6.x-2.0-beta9.tar.gz
-DRUSH_MAKE_TGZ=drush_make-6.x-2.0-beta9.tar.gz
+DRUSH_URL=http://ftp.drupal.org/files/projects/drush-7.x-4.4.tar.gz
+DRUSH_TGZ=`basename $DRUSH_URL`
+DRUSH_MAKE_URL=http://ftp.drupal.org/files/projects/drush_make-6.x-2.2.tar.gz
+DRUSH_MAKE_TGZ=`basename $DRUSH_MAKE_URL`
 DRUSH_ROOT=/usr/local/src
 
-#mkdir $DRUSH_DIR
 cd $DRUSH_ROOT
 
 wget $DRUSH_URL
@@ -24,6 +23,6 @@ mv drush_make drush/commands/
 rm $DRUSH_TGZ
 rm $DRUSH_MAKE_TGZ
 
-ln -s /usr/local/src/drush/drush /usr/local/bin/drush
+sudo ln -s /usr/local/src/drush/drush /usr/local/bin/drush
 
 cd $RETURN
