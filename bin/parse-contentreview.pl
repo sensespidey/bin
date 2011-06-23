@@ -55,8 +55,26 @@ for(my $iR = ($oWkS->{MinRow}+1) ;
   printf("Counted %d unique keywords\n", (scalar keys %kc));
   printf("Counted %d unique synonyms\n", (scalar keys %sc));
 
-  print Dumper(\%kc);
-  print Dumper(\%sc);
+  my @ksorted = map { $_->[0] }
+                sort { $b->[1] <=> $a->[1] }
+                map { [ $_, $kc{$_} ] }
+                keys %kc;
+
+   foreach my $s (@ksorted) {
+     printf("Keyword: [%d] %s\n", $kc{$s}, $s);
+   }
+
+  my @ssorted = map { $_->[0] }
+                sort { $b->[1] <=> $a->[1] }
+                map { [ $_, $sc{$_} ] }
+                keys %sc;
+
+   foreach my $s (@ssorted) {
+     printf("Synonym: [%d] %s\n", $sc{$s}, $s);
+   }
+
+#  print Dumper(\%kc);
+#  print Dumper(\%sc);
 
  die;
 
