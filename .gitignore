@@ -16,5 +16,10 @@ sites.ig-template
 logs
 tmp
 trunk-private
+drush-backups
 src
 web
+*.tar.gz
+*.tgz
+*.zip
+*.pdf
