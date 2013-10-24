@@ -12,7 +12,7 @@ my $twig = new XML::Twig(
   twig_handlers => { 
     'contexts/items/context' => \&context,
     'topics/items/topic' => \&topic,
-#    'thoughts/items/thought/action' =>  \&action,
+    'thoughts/items/thought/action' =>  \&action,
   } 
 );
 $twig->parsefile($arg);
@@ -41,30 +41,42 @@ my @action;
 sub action {
   my($twig, $action) = @_;
 #  $action->print;
-#  print "----\n";
+  # print "--ACTION--\n";
   #while (my $a = $action->
-#  foreach my $a ($action->children()) {
+#k  print $action;
+  #print Dumper($action->twig->entity_list());
+#  foreach my $a ($action->entity_list()) {
 #    $a->print;
-#    print "\n----\n";
+  #print "\n----\n";
 #  }
 }
 
-my $root = $twig->root;
-#my @actions = $root->children_text();
-my $i = 0;
-my $action = $root->first_child('action');
-while (my $action = $action->next_elt($root, 'action')) {
-  print "Action ".$i++.":\n";
-  $action->print;
-  print "\n----\n";
-}
+#print "ENTITY LIST\n";
+#print Dumper($twig->root->entity_list());
+
+#my $root = $twig->root;
+##my @actions = $root->children_text();
+#my @actions = $root->children('action');
+#print Dumper(\@actions);
+#for (my $i=0 ; $i < @actions ; $i++) {
+#  print "Action $i:\n";
+#  print Dumper($actions[$i]);
+#}
+#print $action;
+#print "Action ".$i++.":\n";
+#print "\n----\n";
+#while (my $action = $action->next_sibling('action')) {
+#  print "Action ".$i++.":\n";
+#  $action->print;
+#  print "\n----\n";
+#}
 #$twig->set_root($action);
 #$twig->print;
 
-print "Contexts:\n";
-print Dumper(\@contexts);
-print "Topics:\n";
-print Dumper(\@topics);
+#print "Contexts:\n";
+#print Dumper(\@contexts);
+#print "Topics:\n";
+#print Dumper(\@topics);
 
 
 my $xml = new XML::Simple;
@@ -85,24 +97,46 @@ my $version = $data->{'version'};
 my $information = $data->{'information'}->{'items'};
 
 print "THOUGHTS\n";
+my @thought_hashes;
 #print Dumper($thoughts); # includes next actions
 for (my $i=0 ; $i < @{$thoughts} ; $i++) {
   $t = $thoughts->[$i];
+  $h = {};
   foreach my $tkey (keys %{$t}) {
-#    print "Thought key: ".$tkey."\n";
+    print "Thought key: ".$tkey."\n";
     if ($tkey eq 'topic') {
         $topic = $t->{$tkey}->{'reference'};
         $topic =~ m!topics/items/topic\[(\d+)\]!;
         $topic = $topics[$1]->{'name'};
         print "Topic: $topic\n";
-    }
-    if ($tkey eq 'description') {
-      print "Description: ". $t->{$tkey} . "\n";
+        $h->{$tkey} = $topic;
+    } elsif ($tkey eq 'action') {
+      #print Dumper(keys(%{$t->{$tkey}}));
+      my $action = $t->{$tkey};
+      #$h{$tkey} = $action;
+      foreach my $k (keys %{$action}) {
+        print "$k: $action->{$k}\n" unless ($k eq 'parent');
+      }
+      #parse_action($t->{$tkey});
+    } else {
+      print "$tkey: ". $t->{$tkey} . "\n";
+      $h->{$tkey} = $t->{$tkey};
     }
 #    if ($tkey eq 'action') {
 #      print Dumper($t->{$tkey});
 #    }
     #print "Thought topic: ".Dumper($t->{$tkey}) if $tkey = 'topic';
+  }
+  push(@thought_hashes, $h);
+}
+print "THOUGHT HASHES\n";
+print Dumper(\@thought_hashes);
+
+sub parse_action {
+  my $action = @_;
+  print Dumper($action);
+  foreach my $k (keys %{$action}) {
+    print "$k: $action->{$k}\n" unless ($k eq 'parent');
   }
 }
 
