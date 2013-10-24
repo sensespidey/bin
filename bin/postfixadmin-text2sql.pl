@@ -60,7 +60,7 @@ sub usage {
 # MAIN ROUTINE
 
 foreach my $line (@addresses) {
-  my($source, $dest) = split(/ -- /, $line);
+  my($source, $dest) = split(/ -?->? /, $line);
   my $insert = 1;
   my($sql,$sth, $row);
   
