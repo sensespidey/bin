@@ -39,9 +39,8 @@ while (<FILE>) { chomp; push(@addresses,$_); }
 
 if ($options{'verbose'}) { print "Addresses:\n" . Dumper(\@addresses); }
 
-my $dbh = DBI->connect('dbi:mysql:postfix','postfix','gaF4eameee0quahS')
-  or die "Connection error: $DBI::errstr\n";
-
+my $dsn = "DBI:mysql:postfix;mysql_read_default_file=/etc/postfix/postfixadmin.cnf";
+my $dbh = DBI->connect($dsn, "", "") or die "Connection error: $DBI::errstr\n";
 
 sub usage {
   print
