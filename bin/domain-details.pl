@@ -143,9 +143,8 @@ while (my $domain = shift) {
 
 print wikitable(\@fields, $header, \@dom_details);
 
-#TODO:
-# - Add software fingerprinting (ASP/PHP/Drupal/"Powered by")
-# - track SSL cert details
-# - Add webserver info
-# - Output wiki formatted table
-# - output domain as a link to the actual site..
+#TODO - Add software fingerprinting (ASP/PHP/Drupal/"Powered by")
+#TODO - track SSL cert details
+#TODO - Add webserver info
+#TODO - Output wiki formatted table
+#TODO - output domain as a link to the actual site..
