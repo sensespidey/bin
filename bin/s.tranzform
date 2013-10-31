@@ -1,0 +1,9 @@
+#!/bin/bash
+# Script to connect to s.tranzform
+CONF=~/dotfiles/s.tranzform.wpa.conf
+IF=wlan0
+sudo ls -l $CONF # Prime sudo for bg process to follow
+sudo wpa_supplicant -Dwext -i$IF -c$CONF &
+sleep 10 # Wait for wpa_supplicant to connect
+sudo dhclient $IF # Now get an IP
+ifconfig $IF |grep addr # And show it :)
