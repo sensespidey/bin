@@ -33,6 +33,7 @@ if ($options{'force-all'}) {
 }
 
 if ($options{'verbose'}) { print "Opening address file $ARGV[0]..\n"; }
+if ($options{'help'}) { &usage; exit; }
 
 open(FILE, $ARGV[0]) or die "Couldn't open file $ARGV[0]\n";
 while (<FILE>) { chomp; push(@addresses,$_); }
@@ -53,17 +54,17 @@ sub usage {
   -f force all
 
   <address-file> is one alias per line: source -- destination.
-  ";
+\n";
 }
 
 # MAIN ROUTINE
 
 foreach my $line (@addresses) {
-  my($source, $dest) = split(/ -- /, $line);
+  my($source, $dest) = split(/ -?->? /, $line);
   my $insert = 1;
   my($sql,$sth, $row);
   
-  print "ORIGINAL $line\n";
+  print "ORIGINAL $line\n" if ($options{'verbose'});
 
   unless ($options{'force-source'}) { 
     # Check for existing records with this source address

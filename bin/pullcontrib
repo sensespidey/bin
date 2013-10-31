@@ -1,9 +1,0 @@
-#!/bin/bash
-export CVSROOT=':pserver:anonymous@cvs.drupal.org:/cvs/drupal-contrib'
-cvs login
-for x in $*
-do
-  cvs co -d $x contributions/modules/$x
-  svn add $x
-done
-
