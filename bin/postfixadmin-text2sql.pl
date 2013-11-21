@@ -32,19 +32,19 @@ if ($options{'force-all'}) {
   $options{'force-destination'} = 1;
 }
 
-if ($options{'verbose'}) { print "Opening address file $ARGV[0]..\n"; }
+if ($options{'verbose'}) { print STDERR "Opening address file $ARGV[0]..\n"; }
 if ($options{'help'}) { &usage; exit; }
 
 open(FILE, $ARGV[0]) or die "Couldn't open file $ARGV[0]\n";
 while (<FILE>) { chomp; push(@addresses,$_); }
 
-if ($options{'verbose'}) { print "Addresses:\n" . Dumper(\@addresses); }
+if ($options{'verbose'}) { print STDERR "Addresses:\n" . Dumper(\@addresses); }
 
 my $dsn = "DBI:mysql:postfix;mysql_read_default_file=/etc/postfix/postfixadmin.cnf";
 my $dbh = DBI->connect($dsn, "", "") or die "Connection error: $DBI::errstr\n";
 
 sub usage {
-  print
+  print STDERR
   "Usage: $0 [-hsdfv] <address-file> 
 
   -h help (print this usage statement)
@@ -64,7 +64,7 @@ foreach my $line (@addresses) {
   my $insert = 1;
   my($sql,$sth, $row);
   
-  print "ORIGINAL $line\n" if ($options{'verbose'});
+  print STDERR "ORIGINAL $line\n" if ($options{'verbose'});
 
   unless ($options{'force-source'}) { 
     # Check for existing records with this source address
@@ -72,11 +72,11 @@ foreach my $line (@addresses) {
     $sth = $dbh->prepare($sql); $sth->execute;
     while ($row = $sth->fetchrow_hashref) {
       $insert = 0;
-      if ($options{'verbose'}) { print "Duplicate source address found:\n $line \n" .  Dumper($row); }
+      if ($options{'verbose'}) { print STDERR "Duplicate source address found:\n $line \n" .  Dumper($row); }
       if ($row->{'address'} == $source) {
-        printf("Duplicate row exists with matching source address [%s]\n", $line);
+        printf STDERR "Duplicate row exists with matching source address [%s]\n", $line;
       } else {
-        printf( "Duplicate row exists with different source address (%s vs.  %s)\n", $row->{'address'}, $source);
+        printf STDERR "Duplicate row exists with different source address (%s vs.  %s)\n", $row->{'address'}, $source;
       }
     }
   }
@@ -87,11 +87,11 @@ foreach my $line (@addresses) {
     $sth = $dbh->prepare($sql); $sth->execute;
     while ($row = $sth->fetchrow_hashref) {
       $insert = 0;
-      if ($options{'verbose'}) { print "Duplicate destination address found:\n $line \n" .  Dumper($row); }
+      if ($options{'verbose'}) { print STDERR "Duplicate destination address found:\n $line \n" .  Dumper($row); }
       if ($row->{'goto'} == $dest) {
-        printf("Duplicate row exists with matching dest address [%s]\n", $line);
+        printf STDERR "Duplicate row exists with matching dest address [%s]\n", $line;
       } else {
-        printf("Duplicate row exists with different source address (%s vs.  %s)\n", $row->{'goto'}, $dest);
+        printf STDERR "Duplicate row exists with different source address (%s vs.  %s)\n", $row->{'goto'}, $dest;
       }
     }
   }
