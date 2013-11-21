@@ -1,5 +1,0 @@
-#!/bin/sh
-cd ~/svn/contrib-modules
-for x in $*;
-do cvs -d:pserver:anonymous:anonymous@cvs.drupal.org:/cvs/drupal-contrib checkout -d $x contributions/modules/$x;
-done;
