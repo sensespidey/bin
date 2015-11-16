@@ -9,12 +9,21 @@ curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/loca
 
 # Step 2: install drush globally for all users
 # (see http://docs.drush.org/en/master/install/)
+
+# Download latest stable release manually or use code below. See
+# http://github.com/drush-ops/drush/releases.
+wget https://github.com/drush-ops/drush/releases/download/8.0.0-rc4/drush.phar
+
+# Test your install.
+php drush.phar core-status
+
+# Rename to `drush` instead of `php drush.phar`. Destination can be anywhere on $PATH. 
 # on my systems, /usr/local/src is group-owned by my adm/dev group, and writable by me
-git clone https://github.com/drush-ops/drush.git /usr/local/src/drush
-cd /usr/local/src/drush
-git checkout 6.x
-sudo ln -s /usr/local/src/drush/drush /usr/bin/drush
-composer.phar install
+chmod +x drush.phar
+sudo mv drush.phar /usr/local/bin/drush
+
+# Enrich the bash startup file with completion and aliases.
+drush init
 
 # Step 3: Profit! Print the version to confirm 
 drush --version 
