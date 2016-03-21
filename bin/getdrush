@@ -5,16 +5,15 @@
 # involves composer: https://getcomposer.org/doc/00-intro.md#globally
 
 # Step 1: get composer
-curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin
+php -r "readfile('https://getcomposer.org/installer');" > composer-setup.php 
+php -r "if (hash('SHA384', file_get_contents('composer-setup.php')) === '41e71d86b40f28e771d4bb662b997f79625196afcca95a5abf44391188c695c6c1456e16154c75a211d238cc3bc5cb47') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
+sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
+php -r "unlink('composer-setup.php');"
 
-# Step 2: install drush globally for all users
-# (see http://docs.drush.org/en/master/install/)
-# on my systems, /usr/local/src is group-owned by my adm/dev group, and writable by me
-git clone https://github.com/drush-ops/drush.git /usr/local/src/drush
-cd /usr/local/src/drush
-git checkout 6.x
-sudo ln -s /usr/local/src/drush/drush /usr/bin/drush
-composer.phar install
+# Step 2: install drush globally for all users - now use composer directly
+sudo composer global require drush/drush:7.*
 
 # Step 3: Profit! Print the version to confirm 
+export PATH=$PATH:~/.composer/vendor/bin
+echo "Drush installed globally, and I adjusted your PATH temporarily, but you should edit your .bashrc to include ~/.composer/vendor/bin"
 drush --version 
