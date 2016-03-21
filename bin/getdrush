@@ -11,7 +11,7 @@ sudo php composer-setup.php --install-dir=/usr/local/bin --filename=composer
 php -r "unlink('composer-setup.php');"
 
 # Step 2: install drush globally for all users - now use composer directly
-sudo composer global require drush/drush:7.*
+composer global require drush/drush:7.*
 
 # Step 3: Profit! Print the version to confirm 
 export PATH=$PATH:~/.composer/vendor/bin
