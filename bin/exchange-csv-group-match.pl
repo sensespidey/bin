@@ -56,11 +56,11 @@ foreach my $line (@{$users->lines()}) {
     $users_out->add_line({
         email           => $email,
         givenName       => $line->FirstName,
-        sn              => $line->LastName,
-        cn              => $line->Name,
-        description     => $line->Description,
-        title           => $line->JobTitle,
-        telephoneNumber => $line->TelephoneNumber
+        sn              => trim($line->LastName),
+        cn              => trim($line->Name),
+        description     => trim($line->Description),
+        title           => trim($line->JobTitle),
+        telephoneNumber => trim($line->TelephoneNumber)
       }
     );
   }
@@ -118,3 +118,5 @@ sub write_csv {
   print $fh $class_csv->string();
   close($fh);
 }
+
+sub  trim { my $s = shift; $s =~ s/^\s+|\s+$//g; return $s };
