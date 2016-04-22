@@ -42,24 +42,26 @@ open($fh, ">", $options{'output'}) or die("Unable to open ".$options{'output'}."
 
 my $count = 0;
 foreach my $line (@{$users->lines()}) {
-  my $email = $line->email;
-  my $displayName = $line->givenName . " " . $line->sn;
-  my $givenName = $line->givenName;
-  my $sn = $line->sn;
-  my $title = $line->title;
-  my $description = $line->description;
-  my $telephone = $line->telephoneNumber;
-  print $fh qq{ca "$email" "$password"},
+
+  # createAccount takes at least an email (username) and password
+  # Below is the rest of one GIANT print statement to get the rest of the details
+  print $fh sprintf(qq{createAccount "%s" "$password"}, $line->email),
+
+  # We know a few things for sure
   qq{ zimbraCOSid "$cosid"},
   qq{ zimbraPasswordMustChange TRUE},
-  qq{ givenName "$givenName"},
-  qq{ sn "$givenName"},
-  qq{ cn "$sn"},
-  qq{ displayName "$displayName"},
-  qq{ description "$description"},
-  qq{ title "$title"},
-  qq{ telephoneNumber "$telephone"},
   qq{ company "RNAO"}, 
+
+  # Given name is always present, in our case
+  sprintf(qq{ givenName "%s"}, $line->givenName),
+  sprintf(qq{ displayName "%s"}, $line->givenName . " " . $line->sn),
+
+  # These may or may not be in the data file
+  ( ($line->givenName ne "")       ? sprintf(qq{ sn "%s"}, $line->givenName)                    : () ),
+  ( ($line->sn ne "")              ? sprintf(qq{ cn "%s"}, $line->sn)                           : () ),
+  ( ($line->description ne "")     ? sprintf(qq{ description "%s"}, $line->description)         : () ),
+  ( ($line->title ne "")           ? sprintf(qq{ title "%s"}, $line->title)                     : () ),
+  ( ($line->telephoneNumber ne "") ? sprintf(qq{ telephoneNumber "%s"}, $line->telephoneNumber) : () ),
   qq{\n}
 }
 
