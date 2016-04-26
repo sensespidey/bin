@@ -16,7 +16,7 @@ if ($options{'help'}) { &usage; exit; }
 
 # default files
 if (!$options{'dir'}) { $options{'dir'} = "~/tmp/zcs"; }
-if (!$options{'users'}) { $options{'users'} = 'users2016.csv'; }
+if (!$options{'users'}) { $options{'users'} = 'users2016-full-pass.csv'; }
 if (!$options{'groups'}) { $options{'groups'} = 'groups2016.csv'; }
 if (!$options{'output'}) { $options{'output'} = 'zmprov'; }
 
@@ -41,9 +41,9 @@ sub usage {
 my %user_emails;
 my $users = Class::CSV->parse(
   filename => glob($options{'dir'} . '/' . $options{'users'}),
-  fields => [qw/Name AlternateRecipientForwarding Description DisplayName EmailAddress FirstName JobTitle LastName TelephoneNumber Username/]
+  fields => [qw/Name AlternateRecipientForwarding Description DisplayName EmailAddress FirstName JobTitle LastName TelephoneNumber Username Password/]
 );
-my $users_out = Class::CSV->new( fields => [qw/email givenName sn cn description title telephoneNumber/]);
+my $users_out = Class::CSV->new( fields => [qw/email givenName sn cn description title telephoneNumber password/]);
 
 my $count = 0;
 foreach my $line (@{$users->lines()}) {
@@ -60,7 +60,8 @@ foreach my $line (@{$users->lines()}) {
         cn              => trim($line->Name),
         description     => trim($line->Description),
         title           => trim($line->JobTitle),
-        telephoneNumber => trim($line->TelephoneNumber)
+        telephoneNumber => trim($line->TelephoneNumber),
+        password        => trim($line->Password)
       }
     );
   }
