@@ -57,8 +57,8 @@ foreach my $line (@{$users->lines()}) {
   sprintf(qq{ displayName "%s"}, $line->givenName . " " . $line->sn),
 
   # These may or may not be in the data file
-  ( ($line->givenName ne "")       ? sprintf(qq{ sn "%s"}, $line->givenName)                    : () ),
-  ( ($line->sn ne "")              ? sprintf(qq{ cn "%s"}, $line->sn)                           : () ),
+  ( ($line->givenName ne "")       ? sprintf(qq{ cn "%s"}, $line->givenName)                    : () ),
+  ( ($line->sn ne "")              ? sprintf(qq{ sn "%s"}, $line->sn)                           : () ),
   ( ($line->description ne "")     ? sprintf(qq{ description "%s"}, $line->description)         : () ),
   ( ($line->title ne "")           ? sprintf(qq{ title "%s"}, $line->title)                     : () ),
   ( ($line->telephoneNumber ne "") ? sprintf(qq{ telephoneNumber "%s"}, $line->telephoneNumber) : () ),
