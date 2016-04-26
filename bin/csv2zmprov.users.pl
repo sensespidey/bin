@@ -36,7 +36,7 @@ my $password = 'changeme';
 
 my $users = Class::CSV->parse(
   filename => $options{'input'},
-  fields => [qw/email givenName sn cn description title telephoneNumber/]
+  fields => [qw/email givenName sn cn description title telephoneNumber password/]
 );
 open($fh, ">", $options{'output'}) or die("Unable to open ".$options{'output'}." for writing: $!");
 
@@ -45,7 +45,7 @@ foreach my $line (@{$users->lines()}) {
 
   # createAccount takes at least an email (username) and password
   # Below is the rest of one GIANT print statement to get the rest of the details
-  print $fh sprintf(qq{createAccount "%s" "$password"}, $line->email),
+  print $fh sprintf(qq{createAccount "%s" "%s"}, $line->email, $line->password),
 
   # We know a few things for sure
   qq{ zimbraCOSid "$cosid"},
