@@ -31,8 +31,7 @@ sub usage {
 
 # Lookup COS ID
 #my $cosid = `sudo su - zimbra -c 'zmprov gc Default | grep zimbraId:'`;
-my $cosid = 'fill this in yourself';
-my $password = 'changeme';
+my $cosid = 'e00428a1-0c00-11d9-836a-000d93afea2a';
 
 my $users = Class::CSV->parse(
   filename => $options{'input'},
