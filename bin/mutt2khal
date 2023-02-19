@@ -1,0 +1,10 @@
+#!/usr/bin/awk -f
+# Read from vcalendar-filter and send ical invitation details from mutt to khal.
+
+/^Summary/    { for (i=1; i<=NF-2; i++) $i = $(i+2); NF-=2; summ = $0 }
+/^Location/   { for (i=1; i<=NF-2; i++) $i = $(i+2); NF-=2; meet = $0 }
+/^Dtstart/    { date_st = $3; time_st = $4 }
+/^Dtend/      { time_nd = $4 }
+/^Timezone/   { tz = $3 }
+
+END           { print "-l "meet" "date_st" "time_st" "time_nd" "tz" "summ }
